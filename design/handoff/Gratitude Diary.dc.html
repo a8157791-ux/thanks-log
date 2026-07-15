@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&display=swap">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/fill/style.css">
+<style>
+body{margin:0;background:#FAF8F3;color:#37322C;font-family:"Pretendard Variable",Pretendard,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:#7D8B6F;text-decoration:none}a:hover{color:#5F6E52}
+textarea,input{font-family:inherit}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+</style>
+</helmet>
+<div style="min-height:100vh;display:flex;flex-direction:column;align-items:center">
+  <div style="width:100%;max-width:640px;padding:0 24px;box-sizing:border-box;display:flex;flex-direction:column;min-height:100vh">
+
+    <header style="display:flex;align-items:baseline;justify-content:space-between;padding:36px 0 28px">
+      <div style="font-family:'Gowun Batang',serif;font-size:20px;font-weight:700;letter-spacing:-0.01em">감사일기</div>
+      <nav style="display:flex;gap:22px;font-size:14px">
+        <button onClick="{{ goToday }}" style="{{ tabToday }}" style-hover="color:#37322C">오늘</button>
+        <button onClick="{{ goArchive }}" style="{{ tabArchive }}" style-hover="color:#37322C">기록</button>
+        <button onClick="{{ goTogether }}" style="{{ tabTogether }}" style-hover="color:#37322C">함께</button>
+        <button onClick="{{ goStats }}" style="{{ tabStats }}" style-hover="color:#37322C">통계</button>
+        <button onClick="{{ goSettings }}" style="{{ tabSettings }}" style-hover="color:#37322C">설정</button>
+      </nav>
+    </header>
+
+    <main style="flex:1;padding-bottom:64px">
+
+      <sc-if value="{{ isToday }}" hint-placeholder-val="{{ true }}">
+        <div style="animation:fadeUp .35s ease both">
+          <p style="margin:0;font-size:13px;color:#8A8378;letter-spacing:0.04em">{{ todayLabel }}</p>
+          <h1 style="font-family:'Gowun Batang',serif;font-size:26px;font-weight:400;line-height:1.45;margin:10px 0 0">{{ greeting }}<br>오늘의 감사 세 가지를 남겨보세요.</h1>
+
+          <sc-if value="{{ savedToday }}" hint-placeholder-val="{{ false }}">
+            <div style="margin-top:36px;background:#fff;border:1px solid #E9E4DB;border-radius:14px;padding:28px">
+              <div style="display:flex;align-items:center;justify-content:space-between">
+                <span style="display:inline-flex;align-items:center;gap:8px;font-size:13px;color:#7D8B6F;font-weight:600"><span style="line-height:0;color:#3E382F">{{ moodTodayFace }}</span>오늘의 기록 완료 ✓</span>
+                <span style="font-size:13px;color:#8A8378">{{ streakLabel }}</span>
+              </div>
+              <ol style="margin:18px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:14px">
+                <sc-for list="{{ savedItems }}" as="it" hint-placeholder-count="3">
+                  <li style="display:flex;gap:12px;font-size:15.5px;line-height:1.6">
+                    <span style="color:#B9B2A5;font-family:'Gowun Batang',serif">{{ it.n }}</span>
+                    <span>{{ it.text }}</span>
+                  </li>
+                </sc-for>
+              </ol>
+              <sc-if value="{{ savedPhoto }}" hint-placeholder-val="{{ false }}">
+                {{ savedPhotoImg }}
+              </sc-if>
+              <div style="display:flex;gap:10px;margin-top:22px">
+                <button onClick="{{ editToday }}" style="border:1px solid #E0DACF;background:#fff;color:#6B655B;font-size:13px;padding:9px 16px;border-radius:8px;cursor:pointer" style-hover="border-color:#B9B2A5">수정하기</button>
+                <button onClick="{{ shareToday }}" style="border:none;background:#F0EDE5;color:#5F6E52;font-size:13px;font-weight:600;padding:9px 16px;border-radius:8px;cursor:pointer" style-hover="background:#E7E3D7">친구에게 공유</button>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ notSavedToday }}" hint-placeholder-val="{{ true }}">
+            <div style="margin-top:32px;display:flex;flex-direction:column;gap:14px">
+              <div style="display:flex;align-items:center;gap:6px;justify-content:center;background:#fff;border:1px solid #E9E4DB;border-radius:14px;padding:12px">
+                <span style="font-size:12.5px;color:#8A8378;margin-right:8px">오늘 마음은</span>
+                <sc-for list="{{ moodPicker }}" as="m" hint-placeholder-count="5">
+                  <button onClick="{{ m.onClick }}" style="{{ m.style }}">{{ m.face }}</button>
+                </sc-for>
+              </div>
+              <div style="background:#fff;border:1px solid #E9E4DB;border-radius:14px;padding:6px 18px;display:flex;gap:14px;align-items:flex-start">
+                <span style="font-family:'Gowun Batang',serif;color:#B9B2A5;font-size:15px;padding-top:18px">一</span>
+                <textarea rows="2" placeholder="작은 것도 좋아요. 아침 커피 한 잔처럼." value="{{ d1 }}" onChange="{{ onD1 }}" style="flex:1;border:none;outline:none;resize:none;font-size:15.5px;line-height:1.6;padding:16px 0;background:transparent;color:#37322C"></textarea>
+              </div>
+              <div style="background:#fff;border:1px solid #E9E4DB;border-radius:14px;padding:6px 18px;display:flex;gap:14px;align-items:flex-start">
+                <span style="font-family:'Gowun Batang',serif;color:#B9B2A5;font-size:15px;padding-top:18px">二</span>
+                <textarea rows="2" placeholder="오늘 만난 사람 중 고마운 사람은?" value="{{ d2 }}" onChange="{{ onD2 }}" style="flex:1;border:none;outline:none;resize:none;font-size:15.5px;line-height:1.6;padding:16px 0;background:transparent;color:#37322C"></textarea>
+              </div>
+              <div style="background:#fff;border:1px solid #E9E4DB;border-radius:14px;padding:6px 18px;display:flex;gap:14px;align-items:flex-start">
+                <span style="font-family:'Gowun Batang',serif;color:#B9B2A5;font-size:15px;padding-top:18px">三</span>
+                <textarea rows="2" placeholder="나 자신에게 고마웠던 순간." value="{{ d3 }}" onChange="{{ onD3 }}" style="flex:1;border:none;outline:none;resize:none;font-size:15.5px;line-height:1.6;padding:16px 0;background:transparent;color:#37322C"></textarea>
+              </div>
+
+              <sc-if value="{{ photoPreview }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;gap:10px;overflow-x:auto;padding-bottom:4px">
+                  <sc-for list="{{ draftPhotos }}" as="p" hint-placeholder-count="2">
+                    <div style="position:relative;flex:none">
+                      {{ p.img }}
+                      <button onClick="{{ p.remove }}" style="position:absolute;top:6px;right:6px;border:none;background:rgba(55,50,44,.7);color:#fff;font-size:11px;width:22px;height:22px;border-radius:50%;cursor:pointer;line-height:1">✕</button>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px">
+                <label style="display:inline-flex;align-items:center;gap:8px;font-size:13px;color:#8A8378;cursor:pointer;border:1px dashed #D5CFC2;padding:9px 14px;border-radius:8px" style-hover="color:#6B655B;border-color:#B9B2A5">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="15" rx="2"></rect><circle cx="9" cy="11" r="2"></circle><path d="M3 18l5-5 4 4 3-3 6 6"></path></svg>
+                  사진 첨부
+                  <input type="file" accept="image/*" multiple="{{ true }}" onChange="{{ onPhoto }}" style="display:none">
+                </label>
+                <button onClick="{{ saveToday }}" disabled="{{ saveDisabled }}" style="{{ saveBtnStyle }}">기록하기</button>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ hasMemory }}" hint-placeholder-val="{{ false }}">
+            <div style="margin-top:44px;border-top:1px solid #E9E4DB;padding-top:32px">
+              <p style="margin:0;font-size:12px;color:#B9B2A5;letter-spacing:0.08em;text-transform:uppercase">이날을 기억하세요</p>
+              <button onClick="{{ openMemory }}" style="all:unset;cursor:pointer;display:block;width:100%;box-sizing:border-box;margin-top:14px;background:#F3F0E9;border-radius:14px;padding:22px 24px" style-hover="background:#EFEBE2">
+                <p style="margin:0;font-family:'Gowun Batang',serif;font-size:15px;color:#6B655B">{{ memDateLabel }}</p>
+                <p style="margin:10px 0 0;font-size:15px;line-height:1.65;color:#37322C">“{{ memPreview }}”</p>
+              </button>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isArchive }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:fadeUp .35s ease both">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <h2 style="font-family:'Gowun Batang',serif;font-size:22px;font-weight:400;margin:0">{{ monthLabel }}</h2>
+            <div style="display:flex;gap:6px;align-items:center">
+              <button onClick="{{ goThisMonth }}" style="border:1px solid #E9E4DB;background:#fff;height:32px;padding:0 14px;border-radius:8px;cursor:pointer;color:#6B655B;font-size:13px" style-hover="border-color:#B9B2A5">오늘</button>
+              <button onClick="{{ prevMonth }}" style="border:1px solid #E9E4DB;background:#fff;width:32px;height:32px;border-radius:8px;cursor:pointer;color:#6B655B" style-hover="border-color:#B9B2A5">‹</button>
+              <button onClick="{{ nextMonth }}" style="border:1px solid #E9E4DB;background:#fff;width:32px;height:32px;border-radius:8px;cursor:pointer;color:#6B655B" style-hover="border-color:#B9B2A5">›</button>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:7px;margin-top:22px;font-size:12px;color:#B9B2A5;text-align:center">
+            <span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-top:8px">
+            <sc-for list="{{ calCells }}" as="c" hint-placeholder-count="35">
+              <button onClick="{{ c.onClick }}" disabled="{{ c.disabled }}" style="{{ c.style }}">{{ c.content }}</button>
+            </sc-for>
+          </div>
+
+          <div style="margin-top:36px">
+            <sc-if value="{{ hasSelected }}" hint-placeholder-val="{{ true }}">
+              <div style="animation:fadeUp .3s ease both">
+                <p style="margin:0 0 14px;font-family:'Gowun Batang',serif;font-size:16px;color:#37322C">{{ selDateLabel }}</p>
+                {{ selPhotoImg }}
+                <div style="display:flex;flex-direction:column;gap:10px;margin-top:14px">
+                  <sc-for list="{{ selItems }}" as="it" hint-placeholder-count="3">
+                    <button onClick="{{ it.onClick }}" style="all:unset;cursor:pointer;display:flex;gap:14px;align-items:flex-start;background:#fff;border:1px solid #E9E4DB;border-radius:12px;padding:16px 18px;box-sizing:border-box;width:100%" style-hover="border-color:#C9C2B3">
+                      <span style="font-family:'Gowun Batang',serif;color:#B9B2A5;font-size:15px">{{ it.n }}</span>
+                      <span style="font-size:15px;line-height:1.6;color:#37322C;flex:1">{{ it.text }}</span>
+                      <span style="color:#C9C2B3;font-size:18px;line-height:1.4">›</span>
+                    </button>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-if>
+            <sc-if value="{{ noSelected }}" hint-placeholder-val="{{ false }}">
+              <p style="margin:0;text-align:center;color:#B9B2A5;font-size:13.5px;padding:24px 0">기록이 있는 날짜를 눌러보세요.</p>
+            </sc-if>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isTogether }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:fadeUp .35s ease both">
+          <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px">
+            <sc-for list="{{ groupTabs }}" as="g" hint-placeholder-count="2">
+              <button onClick="{{ g.onClick }}" style="{{ g.style }}"><i class="ph {{ g.icon }}" style="font-size:15px"></i>{{ g.name }}</button>
+            </sc-for>
+            <button onClick="{{ newGroup }}" style="border:1px dashed #D5CFC2;background:none;color:#B9B2A5;font-size:13px;padding:8px 14px;border-radius:99px;cursor:pointer;white-space:nowrap;flex:none" style-hover="border-color:#B9B2A5;color:#8A8378">+ 그룹</button>
+          </div>
+
+          <div style="background:#fff;border:1px solid #E9E4DB;border-radius:16px;padding:22px 24px;display:flex;align-items:center;gap:16px;margin-top:16px">
+            <div style="display:flex">
+              <sc-for list="{{ groupAvatars }}" as="a" hint-placeholder-count="2">
+                <span style="{{ a.style }}">{{ a.initial }}</span>
+              </sc-for>
+            </div>
+            <div style="flex:1">
+              <p style="margin:0;font-size:14px;font-weight:600">{{ groupName }}</p>
+              <p style="margin:4px 0 0;font-size:12.5px;color:#8A8378;display:inline-flex;align-items:center;gap:5px">{{ groupMemberLabel }} · 함께 {{ togetherDays }}일째 <i class="ph-fill ph-fire" style="color:#D08A4E;font-size:14px"></i></p>
+            </div>
+            <button onClick="{{ openMemberModal }}" style="border:1px solid #E0DACF;background:#fff;color:#6B655B;font-size:12.5px;padding:8px 13px;border-radius:8px;cursor:pointer;white-space:nowrap;flex:none" style-hover="border-color:#B9B2A5"><i class="ph ph-user-plus" style="font-size:14px;vertical-align:-2px;margin-right:5px"></i>멤버</button>
+          </div>
+
+          <div style="display:flex;gap:8px;margin-top:22px;overflow-x:auto;padding-bottom:4px">
+            <sc-for list="{{ filterChips }}" as="c" hint-placeholder-count="3">
+              <button onClick="{{ c.onClick }}" style="{{ c.style }}">{{ c.label }}</button>
+            </sc-for>
+          </div>
+
+          <div style="margin-top:22px;display:flex;flex-direction:column;gap:14px">
+            <sc-for list="{{ feed }}" as="p" hint-placeholder-count="5">
+              <div style="{{ p.cardStyle }}">
+                <div style="display:flex;align-items:center;gap:10px">
+                  <span style="{{ p.avatarStyle }}">{{ p.initial }}</span>
+                  <span style="font-size:13.5px;font-weight:600;color:#37322C">{{ p.author }}</span>
+                  <span style="font-size:12px;color:#B9B2A5;margin-left:auto;font-family:'Gowun Batang',serif">{{ p.dateLabel }}</span>
+                </div>
+                {{ p.photoImg }}
+                <ol style="margin:14px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:9px">
+                  <sc-for list="{{ p.items }}" as="it" hint-placeholder-count="3">
+                    <li style="display:flex;gap:11px;font-size:14.5px;line-height:1.6">
+                      <span style="color:#B9B2A5;font-family:'Gowun Batang',serif">{{ it.n }}</span>
+                      <span>{{ it.text }}</span>
+                    </li>
+                  </sc-for>
+                </ol>
+                <div style="display:flex;align-items:center;gap:8px;margin-top:16px;padding-top:14px;border-top:1px solid #F0EDE5">
+                  <button onClick="{{ p.toggleHeart }}" style="{{ p.heartStyle }}">{{ p.heartIcon }}<span style="font-size:13px">{{ p.heartCount }}</span></button>
+                  <button onClick="{{ p.openComments }}" style="{{ p.commentStyle }}"><i class="ph ph-chat-circle" style="font-size:17px"></i><span style="font-size:13px">{{ p.commentCount }}</span></button>
+                </div>
+                <sc-if value="{{ p.commentsOpen }}" hint-placeholder-val="{{ false }}">
+                  <div style="margin-top:14px;padding-top:14px;border-top:1px solid #F5F1E9;animation:fadeUp .2s ease both;display:flex;flex-direction:column;gap:14px">
+                    <sc-if value="{{ p.commentEmpty }}" hint-placeholder-val="{{ true }}">
+                      <p style="margin:0;text-align:center;color:#B9B2A5;font-size:13px;padding:6px 0">첫 댓글을 남겨보세요 🌿</p>
+                    </sc-if>
+                    <sc-for list="{{ p.commentItems }}" as="c" hint-placeholder-count="1">
+                      <div style="display:flex;gap:10px;align-items:flex-start">
+                        <span style="{{ c.avatarStyle }}">{{ c.initial }}</span>
+                        <div style="flex:1">
+                          <p style="margin:0;font-size:12.5px;font-weight:600;color:#37322C">{{ c.author }}</p>
+                          <sc-if value="{{ c.isText }}" hint-placeholder-val="{{ true }}">
+                            <p style="margin:3px 0 0;font-size:14px;line-height:1.5;color:#4A443C">{{ c.text }}</p>
+                          </sc-if>
+                          <sc-if value="{{ c.isSticker }}" hint-placeholder-val="{{ false }}">
+                            {{ c.stickerImg }}
+                          </sc-if>
+                        </div>
+                        <sc-if value="{{ c.mine }}" hint-placeholder-val="{{ false }}">
+                          <button onClick="{{ c.remove }}" style="border:none;background:none;color:#C9B7A8;font-size:12px;cursor:pointer;flex:none;padding:2px 4px" style-hover="color:#9A6A5F">삭제</button>
+                        </sc-if>
+                      </div>
+                    </sc-for>
+                    <sc-if value="{{ stickerPickerOpen }}" hint-placeholder-val="{{ false }}">
+                      <div style="background:#F5F1E9;border-radius:12px;padding:12px;max-height:260px;overflow-y:auto;animation:fadeUp .18s ease both;display:flex;flex-direction:column;gap:12px">
+                        <sc-for list="{{ stickerSections }}" as="sec" hint-placeholder-count="2">
+                          <div>
+                            <p style="margin:0 2px 7px;font-size:11.5px;color:#B0A896;letter-spacing:0.03em;font-weight:600">{{ sec.label }}</p>
+                            <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:4px">
+                              <sc-for list="{{ sec.items }}" as="st" hint-placeholder-count="12">
+                                <button onClick="{{ st.onClick }}" style="border:none;background:none;cursor:pointer;padding:5px;border-radius:8px;line-height:0;display:flex;align-items:center;justify-content:center" style-hover="background:#EAE4D8">{{ st.img }}</button>
+                              </sc-for>
+                            </div>
+                          </div>
+                        </sc-for>
+                      </div>
+                    </sc-if>
+                    <div style="display:flex;gap:8px;align-items:center">
+                      <button onClick="{{ toggleStickerPicker }}" style="{{ stickerBtnStyle }}"><i class="ph ph-sticker" style="font-size:19px"></i></button>
+                      <input value="{{ commentDraft }}" onChange="{{ onCommentDraft }}" placeholder="따뜻한 한마디를 남겨요" style="flex:1;border:1px solid #E0DACF;border-radius:99px;padding:10px 16px;font-size:14px;outline:none;background:#FAF8F3" style-focus="border-color:#7D8B6F">
+                      <button onClick="{{ addComment }}" style="border:none;background:#37322C;color:#FAF8F3;font-size:14px;font-weight:600;padding:10px 22px;border-radius:99px;cursor:pointer;flex:none;white-space:nowrap" style-hover="background:#4A443C">등록</button>
+                    </div>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isStats }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:fadeUp .35s ease both">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <h2 style="font-family:'Gowun Batang',serif;font-size:22px;font-weight:400;margin:0">우리 마음 밭</h2>
+            <button onClick="{{ shareGarden }}" style="display:inline-flex;align-items:center;gap:6px;border:1px solid #E0DACF;background:#fff;color:#5F6E52;font-size:13px;font-weight:600;padding:8px 14px;border-radius:8px;cursor:pointer" style-hover="border-color:#B9B2A5"><i class="ph ph-image" style="font-size:15px"></i>카드 저장</button>
+          </div>
+
+          <div style="display:flex;gap:8px;margin-top:18px;overflow-x:auto;padding-bottom:4px">
+            <sc-for list="{{ groupTabs }}" as="g" hint-placeholder-count="2">
+              <button onClick="{{ g.onClick }}" style="{{ g.style }}"><i class="ph {{ g.icon }}" style="font-size:15px"></i>{{ g.name }}</button>
+            </sc-for>
+          </div>
+
+          <div style="margin-top:18px;position:relative;border-radius:20px;overflow:hidden;height:250px;background:#EFEBE2">
+            <div style="display:flex;height:100%;gap:2px">
+              <sc-for list="{{ statHero }}" as="h" hint-placeholder-count="2">
+                <div style="{{ h.style }}">
+                  {{ h.fallback }}
+                  <span style="{{ h.tagStyle }}">{{ h.name }}</span>
+                </div>
+              </sc-for>
+            </div>
+            <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(28,24,18,.78),rgba(28,24,18,.05) 52%);pointer-events:none"></div>
+            <div style="position:absolute;left:0;right:0;bottom:0;padding:20px 22px;color:#fff">
+              <p style="margin:0;font-family:'Gowun Batang',serif;font-size:19px">{{ groupName }}의 밭 · {{ gardenStageName }}</p>
+              <p style="margin:6px 0 0;font-size:12.5px;opacity:.92">함께 {{ togetherDays }}일 · 감사 {{ gardenTotal }}개를 심었어요</p>
+              <div style="margin-top:12px;height:7px;border-radius:99px;background:rgba(255,255,255,.3);overflow:hidden">
+                <div style="height:100%;border-radius:99px;background:#fff;width:{{ gardenProgress }}"></div>
+              </div>
+              <p style="margin:7px 0 0;font-size:11.5px;opacity:.85">{{ gardenNextLabel }}</p>
+            </div>
+          </div>
+
+          <div style="margin-top:14px;background:#fff;border:1px solid #E9E4DB;border-radius:16px;padding:22px 24px">
+            <p style="margin:0 0 14px;font-size:12px;color:#B9B2A5;letter-spacing:0.05em">멤버별 텃밭</p>
+            <div style="display:flex;height:14px;border-radius:99px;overflow:hidden;background:#F0EDE5">
+              <sc-for list="{{ memberShare }}" as="m" hint-placeholder-count="2">
+                <div title="{{ m.name }}" style="{{ m.barStyle }}"></div>
+              </sc-for>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:14px;margin-top:14px">
+              <sc-for list="{{ memberShare }}" as="m" hint-placeholder-count="2">
+                <span style="display:inline-flex;align-items:center;gap:7px;font-size:13px;color:#6B655B"><span style="{{ m.dotStyle }}"></span>{{ m.name }} · {{ m.count }}개</span>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="margin-top:14px;background:#fff;border:1px solid #E9E4DB;border-radius:16px;padding:22px 24px">
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <p style="margin:0;font-size:12px;color:#B9B2A5;letter-spacing:0.05em">지난 5주의 밭</p>
+              <p style="margin:0;font-size:11.5px;color:#C9C2B3">한 칸 = 하루</p>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-top:16px">
+              <sc-for list="{{ gardenCells }}" as="c" hint-placeholder-count="35">
+                <div title="{{ c.label }}" style="{{ c.style }}">{{ c.content }}</div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="margin-top:14px;background:{{ flowerBg }};border-radius:16px;padding:22px 24px;display:flex;align-items:center;gap:16px">
+            <div style="{{ flowerPhotoStyle }}">{{ flowerFallback }}</div>
+            <div>
+              <p style="margin:0;font-size:12px;color:#8A8378">이 밭에 가장 크게 핀 꽃</p>
+              <p style="margin:6px 0 0;font-family:'Gowun Batang',serif;font-size:20px;color:#37322C">“{{ topKeyword }}”</p>
+              <p style="margin:5px 0 0;font-size:12.5px;color:#8A8378">{{ topKeywordCount }}번 피어났어요</p>
+            </div>
+          </div>
+
+          <p style="margin:26px 0 0;font-family:'Gowun Batang',serif;font-size:15px;line-height:1.8;color:#8A8378;text-align:center">“{{ gardenQuote }}”</p>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isSettings }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:fadeUp .35s ease both">
+          <h2 style="font-family:'Gowun Batang',serif;font-size:22px;font-weight:400;margin:0">설정</h2>
+          <div style="margin-top:26px;background:#fff;border:1px solid #E9E4DB;border-radius:14px;overflow:hidden">
+            <div style="padding:20px 22px;display:flex;align-items:center;gap:16px;border-bottom:1px solid #F0EDE5">
+              <div style="{{ profileStyle }}">{{ profileFallback }}</div>
+              <div style="flex:1">
+                <p style="margin:0;font-size:14px">프로필 사진</p>
+                <p style="margin:4px 0 0;font-size:12px;color:#B9B2A5">감사·함께 화면에 표시돼요</p>
+              </div>
+              <label style="border:1px solid #E0DACF;background:#fff;color:#6B655B;font-size:13px;padding:8px 14px;border-radius:8px;cursor:pointer" style-hover="border-color:#B9B2A5">변경<input type="file" accept="image/*" onChange="{{ onProfilePhoto }}" style="display:none"></label>
+            </div>
+            <div style="padding:20px 22px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #F0EDE5">
+              <span style="font-size:14px">닉네임</span>
+              <input value="{{ name }}" onChange="{{ onName }}" placeholder="이름 입력" style="border:none;outline:none;text-align:right;font-size:14px;color:#6B655B;background:transparent;width:140px">
+            </div>
+            <div style="padding:20px 22px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #F0EDE5">
+              <div>
+                <p style="margin:0;font-size:14px">저녁 알림</p>
+                <p style="margin:4px 0 0;font-size:12px;color:#B9B2A5">매일 밤 9시에 알려드려요</p>
+              </div>
+              <button onClick="{{ toggleReminder }}" style="{{ reminderStyle }}"><span style="{{ reminderKnob }}"></span></button>
+            </div>
+            <div style="padding:20px 22px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #F0EDE5">
+              <div>
+                <p style="margin:0;font-size:14px;display:inline-flex;align-items:center;gap:7px"><i class="ph ph-cloud-check" style="font-size:17px;color:#7D8B6F"></i>클라우드 백업</p>
+                <p style="margin:4px 0 0;font-size:12px;color:#B9B2A5">카카오 계정에 저장돼 기기를 바꿔도 그대로예요</p>
+              </div>
+              <span style="font-size:12px;color:#7D8B6F;font-weight:600">{{ backupLabel }}</span>
+            </div>
+            <div style="padding:20px 22px;display:flex;align-items:center;justify-content:space-between">
+              <div>
+                <p style="margin:0;font-size:14px">카카오톡으로 공유</p>
+                <p style="margin:4px 0 0;font-size:12px;color:#B9B2A5">친구에게 감사일기를 보내요</p>
+              </div>
+              <button onClick="{{ kakaoShare }}" style="border:none;background:#FEE500;color:#191600;font-size:13px;font-weight:700;padding:9px 14px;border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;gap:6px" style-hover="filter:brightness(0.96)"><i class="ph-fill ph-chat-circle-dots" style="font-size:15px"></i>카카오톡</button>
+            </div>
+          </div>
+
+          <div style="margin-top:14px;background:#fff;border:1px solid #E9E4DB;border-radius:14px;overflow:hidden">
+            <div style="padding:18px 22px;border-bottom:1px solid #F0EDE5;display:flex;align-items:center;justify-content:space-between">
+              <p style="margin:0;font-size:14px">내 친구</p>
+              <span style="font-size:12px;color:#B9B2A5">{{ friendCount }}명</span>
+            </div>
+            <sc-for list="{{ friendList }}" as="f" hint-placeholder-count="3">
+              <div style="padding:14px 22px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #F5F1E9">
+                <span style="{{ f.avatarStyle }}">{{ f.initial }}</span>
+                <span style="flex:1;font-size:14px;color:#37322C">{{ f.name }}</span>
+                <button onClick="{{ f.remove }}" style="border:none;background:none;color:#C9B7A8;font-size:13px;cursor:pointer" style-hover="color:#9A6A5F">삭제</button>
+              </div>
+            </sc-for>
+            <div style="padding:14px 18px;display:flex;flex-direction:column;gap:10px">
+              <button onClick="{{ openKakaoSheet }}" style="border:none;background:#FEE500;color:#191600;font-size:14px;font-weight:700;padding:12px;border-radius:10px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px" style-hover="filter:brightness(0.96)"><i class="ph-fill ph-chat-circle-dots" style="font-size:17px"></i>카카오 친구 초대</button>
+              <div style="display:flex;gap:8px">
+                <input value="{{ friendInput }}" onChange="{{ onFriendInput }}" placeholder="이름으로 직접 추가" style="flex:1;border:1px solid #E0DACF;border-radius:10px;padding:11px 14px;font-size:14px;outline:none;background:#fff" style-focus="border-color:#7D8B6F">
+                <button onClick="{{ addFriend }}" style="border:none;background:#F0EDE5;color:#5F6E52;font-size:14px;font-weight:600;padding:0 18px;border-radius:10px;cursor:pointer" style-hover="background:#E7E3D7">추가</button>
+              </div>
+            </div>
+          </div>
+
+          <button onClick="{{ resetData }}" style="margin-top:20px;border:none;background:none;color:#B9887E;font-size:13px;cursor:pointer;padding:8px 0" style-hover="color:#9A6A5F">모든 데이터 초기화</button>
+        </div>
+      </sc-if>
+    </main>
+  </div>
+
+  <sc-if value="{{ detailOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeDetail }}" style="position:fixed;inset:0;background:rgba(55,50,44,.35);display:flex;align-items:center;justify-content:center;padding:24px;animation:fadeIn .2s ease both;z-index:50">
+      <div onClick="{{ stop }}" style="background:#FAF8F3;border-radius:18px;padding:32px;max-width:440px;width:100%;max-height:80vh;overflow:auto;box-sizing:border-box;animation:fadeUp .25s ease both">
+        <div style="display:flex;justify-content:space-between;align-items:baseline">
+          <h3 style="font-family:'Gowun Batang',serif;font-size:18px;font-weight:400;margin:0">{{ detailDateLabel }}</h3>
+          <button onClick="{{ closeDetail }}" style="border:none;background:none;color:#8A8378;font-size:13px;cursor:pointer">닫기</button>
+        </div>
+        <ol style="margin:22px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:14px">
+          <sc-for list="{{ detailItems }}" as="it" hint-placeholder-count="3">
+            <li style="display:flex;gap:12px;font-size:15px;line-height:1.65">
+              <span style="color:#B9B2A5;font-family:'Gowun Batang',serif">{{ it.n }}</span>
+              <span>{{ it.text }}</span>
+            </li>
+          </sc-for>
+        </ol>
+        <sc-if value="{{ detailPhoto }}" hint-placeholder-val="{{ false }}">
+          {{ detailPhotoImg }}
+        </sc-if>
+      </div>
+    </div>
+  </sc-if>
+
+
+  <sc-if value="{{ kakaoSheetOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeKakaoSheet }}" style="position:fixed;inset:0;background:rgba(55,50,44,.35);display:flex;align-items:flex-end;justify-content:center;animation:fadeIn .2s ease both;z-index:90">
+      <div onClick="{{ stop }}" style="background:#FAF8F3;border-radius:22px 22px 0 0;padding:24px 22px 30px;max-width:640px;width:100%;box-sizing:border-box;max-height:78vh;display:flex;flex-direction:column;animation:fadeUp .28s ease both">
+        <div style="width:38px;height:4px;border-radius:99px;background:#DDD7CB;margin:0 auto 18px"></div>
+        <div style="display:flex;align-items:center;gap:9px">
+          <span style="width:34px;height:34px;border-radius:10px;background:#FEE500;display:flex;align-items:center;justify-content:center;color:#191600"><i class="ph-fill ph-chat-circle-dots" style="font-size:19px"></i></span>
+          <div>
+            <h3 style="font-family:'Gowun Batang',serif;font-size:18px;font-weight:400;margin:0">카카오 친구 초대</h3>
+            <p style="margin:2px 0 0;font-size:12px;color:#B9B2A5">감사일기를 함께 쓰는 친구만 보여요</p>
+          </div>
+        </div>
+        <div style="flex:1;overflow-y:auto;margin-top:18px;display:flex;flex-direction:column;gap:4px">
+          <p style="margin:0 0 6px;font-size:12px;color:#B9B2A5;letter-spacing:0.05em">앱을 함께 쓰는 친구</p>
+          <sc-for list="{{ kakaoFriends }}" as="k" hint-placeholder-count="3">
+            <div style="display:flex;align-items:center;gap:12px;padding:11px 4px">
+              <span style="{{ k.avatarStyle }}">{{ k.initial }}</span>
+              <div style="flex:1;min-width:0">
+                <p style="margin:0;font-size:14px;color:#37322C">{{ k.name }}</p>
+                <p style="margin:2px 0 0;font-size:11.5px;color:#B9B2A5">{{ k.statusMsg }}</p>
+              </div>
+              <button onClick="{{ k.invite }}" style="{{ k.btnStyle }}">{{ k.btnLabel }}</button>
+            </div>
+          </sc-for>
+          <p style="margin:14px 4px 0;font-size:12px;color:#B9B2A5;line-height:1.6;text-wrap:pretty">개인정보 보호를 위해 카카오 친구 전체를 불러오지 않아요. 아직 앱을 쓰지 않는 친구는 카톡 메시지로 초대할 수 있어요.</p>
+        </div>
+        <button onClick="{{ kakaoInviteMore }}" style="margin-top:14px;border:none;background:#FEE500;color:#191600;font-size:14px;font-weight:700;padding:13px;border-radius:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px" style-hover="filter:brightness(0.96)"><i class="ph-fill ph-paper-plane-tilt" style="font-size:16px"></i>카카오톡으로 친구 초대하기</button>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ memberModalOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeMemberModal }}" style="position:fixed;inset:0;background:rgba(55,50,44,.35);display:flex;align-items:flex-end;justify-content:center;padding:0;animation:fadeIn .2s ease both;z-index:80">
+      <div onClick="{{ stop }}" style="background:#FAF8F3;border-radius:22px 22px 0 0;padding:28px 24px 34px;max-width:640px;width:100%;box-sizing:border-box;animation:fadeUp .28s ease both">
+        <div style="width:38px;height:4px;border-radius:99px;background:#DDD7CB;margin:0 auto 22px"></div>
+        <h3 style="font-family:'Gowun Batang',serif;font-size:20px;font-weight:400;margin:0;display:flex;align-items:center;gap:8px"><i class="ph {{ groupIcon }}"></i>{{ groupName }} 멤버</h3>
+        <p style="margin:8px 0 0;font-size:13.5px;color:#8A8378">이 그룹에 함께할 사람을 추가하거나 내보낼 수 있어요.</p>
+
+        <div style="display:flex;flex-direction:column;gap:2px;margin-top:20px">
+          <sc-for list="{{ groupMemberRows }}" as="m" hint-placeholder-count="2">
+            <div style="display:flex;align-items:center;gap:12px;padding:12px 2px;border-bottom:1px solid #F0EDE5">
+              <span style="{{ m.avatarStyle }}">{{ m.initial }}</span>
+              <span style="flex:1;font-size:14px;color:#37322C">{{ m.name }} {{ m.tag }}</span>
+              <sc-if value="{{ m.removable }}" hint-placeholder-val="{{ true }}">
+                <button onClick="{{ m.remove }}" style="border:none;background:none;color:#C9B7A8;font-size:13px;cursor:pointer" style-hover="color:#9A6A5F">내보내기</button>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+
+        <p style="margin:22px 0 8px;font-size:12px;color:#B9B2A5;letter-spacing:0.05em">내 친구에서 추가</p>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          <sc-for list="{{ memberFriendChips }}" as="f" hint-placeholder-count="3">
+            <button onClick="{{ f.onClick }}" style="{{ f.style }}">{{ f.name }}</button>
+          </sc-for>
+        </div>
+
+        <p style="margin:20px 0 8px;font-size:12px;color:#B9B2A5;letter-spacing:0.05em">직접 추가</p>
+        <div style="display:flex;gap:8px">
+          <input value="{{ memberInput }}" onChange="{{ onMemberInput }}" placeholder="멤버 이름" style="flex:1;border:1px solid #E0DACF;border-radius:10px;padding:12px 15px;font-size:14.5px;outline:none;background:#fff" style-focus="border-color:#7D8B6F">
+          <button onClick="{{ addMemberDirect }}" style="border:none;background:#F0EDE5;color:#5F6E52;font-size:14px;font-weight:600;padding:0 20px;border-radius:10px;cursor:pointer" style-hover="background:#E7E3D7">추가</button>
+        </div>
+
+        <button onClick="{{ closeMemberModal }}" style="width:100%;margin-top:24px;border:none;background:#37322C;color:#FAF8F3;font-size:14.5px;font-weight:600;padding:14px;border-radius:11px;cursor:pointer" style-hover="background:#4A443C">완료</button>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ groupModalOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeGroupModal }}" style="position:fixed;inset:0;background:rgba(55,50,44,.35);display:flex;align-items:flex-end;justify-content:center;padding:0;animation:fadeIn .2s ease both;z-index:80">
+      <div onClick="{{ stop }}" style="background:#FAF8F3;border-radius:22px 22px 0 0;padding:28px 24px 34px;max-width:640px;width:100%;box-sizing:border-box;animation:fadeUp .28s ease both">
+        <div style="width:38px;height:4px;border-radius:99px;background:#DDD7CB;margin:0 auto 22px"></div>
+
+        <sc-if value="{{ gmStep0 }}" hint-placeholder-val="{{ true }}">
+          <h3 style="font-family:'Gowun Batang',serif;font-size:20px;font-weight:400;margin:0">새 감사 그룹 만들기</h3>
+          <p style="margin:8px 0 0;font-size:13.5px;color:#8A8378">부부, 가족, 친구… 함께 감사를 나눌 사람들을 모아요.</p>
+
+          <p style="margin:26px 0 10px;font-size:12px;color:#B9B2A5;letter-spacing:0.05em">아이콘</p>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <sc-for list="{{ emojiChoices }}" as="em" hint-placeholder-count="6">
+              <button onClick="{{ em.onClick }}" style="{{ em.style }}"><i class="ph {{ em.char }}"></i></button>
+            </sc-for>
+          </div>
+
+          <p style="margin:24px 0 10px;font-size:12px;color:#B9B2A5;letter-spacing:0.05em">그룹 이름</p>
+          <input value="{{ gmName }}" onChange="{{ onGmName }}" placeholder="예: 우리 부부, 가족방" style="width:100%;box-sizing:border-box;border:1px solid #E0DACF;border-radius:10px;padding:14px 16px;font-size:15px;outline:none;background:#fff" style-focus="border-color:#7D8B6F">
+
+          <button onClick="{{ gmNext }}" disabled="{{ gmNextDisabled }}" style="{{ gmNextStyle }}">다음</button>
+        </sc-if>
+
+        <sc-if value="{{ gmStep1 }}" hint-placeholder-val="{{ false }}">
+          <h3 style="font-family:'Gowun Batang',serif;font-size:20px;font-weight:400;margin:0;display:flex;align-items:center;gap:8px"><i class="ph {{ gmEmoji }}"></i>{{ gmName }}</h3>
+          <p style="margin:8px 0 0;font-size:13.5px;color:#8A8378">함께할 멤버를 초대하세요. 이름으로 추가하거나 링크를 보내요.</p>
+
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:22px">
+            <span style="display:inline-flex;align-items:center;gap:6px;background:#F0EDE5;color:#5F6E52;font-size:13px;padding:8px 14px;border-radius:99px">나 (나)</span>
+            <sc-for list="{{ gmMembers }}" as="m" hint-placeholder-count="1">
+              <span style="display:inline-flex;align-items:center;gap:8px;background:{{ m.bg }};color:#fff;font-size:13px;padding:8px 14px;border-radius:99px">{{ m.name }}<button onClick="{{ m.remove }}" style="border:none;background:none;color:#fff;cursor:pointer;font-size:13px;opacity:.8;padding:0">✕</button></span>
+            </sc-for>
+          </div>
+
+          <p style="margin:20px 0 8px;font-size:12px;color:#B9B2A5;letter-spacing:0.05em">내 친구에서 선택</p>
+          <div style="display:flex;flex-wrap:wrap;gap:8px">
+            <sc-for list="{{ gmFriendChips }}" as="f" hint-placeholder-count="3">
+              <button onClick="{{ f.onClick }}" style="{{ f.style }}">{{ f.name }}</button>
+            </sc-for>
+          </div>
+
+          <p style="margin:20px 0 8px;font-size:12px;color:#B9B2A5;letter-spacing:0.05em">직접 추가</p>
+          <div style="display:flex;gap:8px">
+            <input value="{{ gmMemberInput }}" onChange="{{ onGmMemberInput }}" placeholder="멤버 이름" style="flex:1;border:1px solid #E0DACF;border-radius:10px;padding:12px 15px;font-size:14.5px;outline:none;background:#fff" style-focus="border-color:#7D8B6F">
+            <button onClick="{{ gmAddMember }}" style="border:none;background:#F0EDE5;color:#5F6E52;font-size:14px;font-weight:600;padding:0 20px;border-radius:10px;cursor:pointer" style-hover="background:#E7E3D7">추가</button>
+          </div>
+
+          <button onClick="{{ gmCopyInvite }}" style="width:100%;margin-top:14px;border:none;background:#FEE500;color:#191600;font-size:13.5px;font-weight:700;padding:13px;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px" style-hover="filter:brightness(0.96)"><i class="ph-fill ph-chat-circle-dots" style="font-size:16px"></i>카카오톡으로 초대</button>
+
+          <div style="display:flex;gap:10px;margin-top:22px">
+            <button onClick="{{ gmBack }}" style="border:1px solid #E0DACF;background:#fff;color:#6B655B;font-size:14px;padding:14px 20px;border-radius:10px;cursor:pointer" style-hover="border-color:#B9B2A5">이전</button>
+            <button onClick="{{ gmCreate }}" style="flex:1;border:none;background:#37322C;color:#FAF8F3;font-size:14.5px;font-weight:600;padding:14px;border-radius:10px;cursor:pointer" style-hover="background:#4A443C">그룹 만들기</button>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ showOnboarding }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;inset:0;background:#FAF8F3;z-index:100;display:flex;align-items:center;justify-content:center;padding:24px">
+      <div style="max-width:400px;width:100%;text-align:center;animation:fadeUp .4s ease both">
+        <sc-if value="{{ obStep0 }}" hint-placeholder-val="{{ true }}">
+          <p style="font-family:'Gowun Batang',serif;font-size:42px;margin:0">🙏</p>
+          <h1 style="font-family:'Gowun Batang',serif;font-size:26px;font-weight:400;line-height:1.5;margin:28px 0 0">하루 세 가지,<br>작은 감사를 모으는 습관</h1>
+          <p style="font-size:14.5px;line-height:1.7;color:#8A8378;margin:18px 0 0">매일 밤, 오늘 고마웠던 순간 세 가지를<br>짧게 남겨보세요. 사진 한 장과 함께요.</p>
+          <button onClick="{{ obNext }}" style="margin-top:36px;border:none;background:#FEE500;color:#191600;font-size:15px;font-weight:700;padding:15px 28px;border-radius:12px;cursor:pointer;display:inline-flex;align-items:center;gap:9px;width:100%;box-sizing:border-box;justify-content:center" style-hover="filter:brightness(0.96)"><i class="ph-fill ph-chat-circle-dots" style="font-size:19px"></i>카카오로 시작하기</button>
+          <p style="margin:14px 0 0;font-size:12px;color:#B9B2A5">카카오 계정으로 안전하게 시작해요</p>
+        </sc-if>
+        <sc-if value="{{ obStep1 }}" hint-placeholder-val="{{ false }}">
+          <div style="display:inline-flex;align-items:center;gap:7px;background:#F0EDE5;color:#5F6E52;font-size:12.5px;padding:7px 14px;border-radius:99px;margin-bottom:22px"><i class="ph-fill ph-check-circle" style="font-size:15px"></i>카카오 계정 연결됨</div>
+          <h1 style="font-family:'Gowun Batang',serif;font-size:24px;font-weight:400;line-height:1.5;margin:0">어떻게 불러드릴까요?</h1>
+          <input value="{{ obName }}" onChange="{{ onObName }}" placeholder="이름 또는 별명" style="margin-top:28px;width:100%;box-sizing:border-box;border:none;border-bottom:1px solid #D5CFC2;background:transparent;outline:none;font-size:18px;text-align:center;padding:12px 0;font-family:'Gowun Batang',serif" style-focus="border-bottom-color:#7D8B6F">
+          <p style="margin:10px 0 0;font-size:12px;color:#B9B2A5">카카오 닉네임을 불러왔어요 · 자유롭게 바꿔도 돼요</p>
+          <button onClick="{{ obFinish }}" style="margin-top:36px;border:none;background:#37322C;color:#FAF8F3;font-size:14.5px;font-weight:600;padding:14px 40px;border-radius:10px;cursor:pointer" style-hover="background:#4A443C">일기 시작하기</button>
+          <p style="margin:16px 0 0"><button onClick="{{ obFinish }}" style="border:none;background:none;color:#B9B2A5;font-size:13px;cursor:pointer">건너뛰기</button></p>
+        </sc-if>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ toastOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;bottom:32px;left:50%;transform:translateX(-50%);background:#37322C;color:#FAF8F3;font-size:13.5px;padding:12px 22px;border-radius:99px;z-index:200;animation:fadeUp .25s ease both;white-space:nowrap">{{ toast }}</div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;accent&quot;: {&quot;editor&quot;: &quot;color&quot;, &quot;default&quot;: &quot;#7D8B6F&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;options&quot;: [&quot;#7D8B6F&quot;, &quot;#A98467&quot;, &quot;#8E9AAF&quot;, &quot;#B0713F&quot;], &quot;section&quot;: &quot;스타일&quot;}}">
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    const saved = this.load();
+    this.state = {
+      screen: 'today', onboarded: saved.onboarded, name: saved.name || '',
+      obStep: 0, obName: '', entries: saved.entries, draft: ['', '', ''],
+      photos: [], draftMood: 0, monthOff: 0, detailKey: null, selectedKey: null, toast: '', memKey: null, editing: false,
+      reminder: saved.reminder !== false,
+      togetherFilter: 'all', hearts: {}, groups: this.seedGroups(), currentGroup: 'couple',
+      groupModal: null, comments: {}, commentModal: null, commentDraft: '',
+      profilePhoto: saved.profilePhoto || null, friends: saved.friends || this.seedFriends(), friendInput: '',
+      memberModal: false, memberInput: '',
+      kakaoSheet: false, kakaoAll: this.seedKakao(), kakaoInvited: {}, stickerPicker: false
+    };
+  }
+  key(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+  todayKey() { return this.key(new Date()); }
+  load() {
+    try { const raw = localStorage.getItem('gratitude-v2'); if (raw) return JSON.parse(raw); } catch (e) {}
+    return { onboarded: false, name: '', entries: this.seed(), reminder: true, profilePhoto: null, friends: this.seedFriends() };
+  }
+  persist(extra) {
+    const s = Object.assign({}, this.state, extra || {});
+    try { localStorage.setItem('gratitude-v2', JSON.stringify({ onboarded: s.onboarded, name: s.name, entries: s.entries, reminder: s.reminder, profilePhoto: s.profilePhoto, friends: s.friends })); } catch (e) {}
+  }
+  set(patch) { this.setState(patch, () => this.persist()); }
+  seed() {
+    const texts = [
+      ['아침에 창으로 들어온 햇살이 따뜻했다', '동생이 보내준 브이로그 편집 팁', '퇴근길에 들은 좋아하는 노래'],
+      ['오랜만에 친구와 긴 통화를 했다', '점심에 먹은 김치찌개가 완벽했음', '산책하다 만난 강아지'],
+      ['카메라 배터리를 미리 충전해둔 어제의 나', '구독자분이 남겨준 다정한 댓글', '비 오는 소리 들으며 잠들기'],
+      ['엄마가 담가준 반찬', '어려운 편집을 끝냈다!', '따뜻한 물로 하는 샤워'],
+      ['버스를 놓치지 않고 탔다', '동료가 커피를 사줬다', '저녁 하늘 색이 예뻤음'],
+      ['새로 산 노트가 손에 잘 맞는다', '친구가 내 영상을 공유해줬다', '일찍 잠든 덕에 개운한 아침'],
+      ['도서관의 조용한 오후', '고양이가 무릎에 올라와줬다', '계획한 촬영을 다 끝냈다'],
+      ['맛있는 빵집을 발견했다', '오래 미룬 방 정리를 끝냄', '밤 산책의 시원한 바람']
+    ];
+    const P = { beach: 'assets/photo-beach.jpg', flower: 'assets/photo-flower.jpg', town: 'assets/photo-town.jpg', poster: 'assets/photo-poster.jpg', p1: 'assets/p1.webp', p2: 'assets/p2.webp', p3: 'assets/p3.webp', p4: 'assets/p4.webp', p5: 'assets/p5.webp' };
+    const photos = {
+      1: [P.p1, P.town, P.p4], 2: [P.beach, P.poster], 3: [P.flower, P.p3],
+      4: [P.town, P.beach, P.p2, P.p5], 6: [P.flower], 7: [P.p5, P.beach, P.p1],
+      9: [P.poster], 12: [P.p2, P.town, P.p4, P.flower, P.p1],
+      15: [P.town, P.beach, P.poster, P.p3, P.p5], 16: [P.flower, P.p4], 20: [P.p5, P.beach], 24: [P.town, P.p1, P.p2]
+    };
+    const entries = {}; const today = new Date(); let ti = 0;
+    [1, 2, 3, 4, 6, 7, 9, 12, 15, 16, 20, 24].forEach((back, i) => {
+      const d = new Date(today); d.setDate(d.getDate() - back);
+      const entry = { items: texts[ti % texts.length], mood: (back * 3 + 1) % 5 };
+      ti++;
+      if (photos[back]) entry.photos = photos[back];
+      entries[this.key(d)] = entry;
+    });
+    return entries;
+  }
+  photosOf(entry) { return entry.photos ? entry.photos : (entry.photo ? [entry.photo] : []); }
+  moodFace(i, size) {
+    const icons = ['ph-smiley', 'ph-smiley-wink', 'ph-smiley-meh', 'ph-heart', 'ph-smiley-nervous'];
+    return React.createElement('i', { className: 'ph ' + icons[i % 5], style: { fontSize: (size || 26) + 'px', color: '#3E382F', lineHeight: 0, display: 'inline-block' } });
+  }
+  dayCollage(srcs, radius) {
+    const h = React.createElement, r = radius || 8;
+    const img = (src, extra) => h('img', { src, style: Object.assign({ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }, extra) });
+    const wrap = kids => h('div', { style: { flex: 1, minHeight: 0, display: 'grid', gap: 2, borderRadius: r, overflow: 'hidden' } }, kids);
+    if (srcs.length <= 1) return h('div', { style: { flex: 1, minHeight: 0, borderRadius: r, overflow: 'hidden' } }, img(srcs[0]));
+    if (srcs.length === 2) return wrap([h('div', { key: 0, style: { gridColumn: '1 / 3' } }, img(srcs[0])), h('div', { key: 1, style: { gridColumn: '1 / 3' } }, img(srcs[1]))]);
+    return h('div', { style: { flex: 1, minHeight: 0, display: 'grid', gridTemplateColumns: '2fr 1fr', gridTemplateRows: '1fr 1fr', gap: 2, borderRadius: r, overflow: 'hidden' } },
+      h('div', { key: 0, style: { gridRow: '1 / 3' } }, img(srcs[0])), h('div', { key: 1 }, img(srcs[1])), h('div', { key: 2 }, img(srcs[2])));
+  }
+  photoSlider(srcs, maxH, onClick) {
+    if (!srcs || !srcs.length) return null;
+    const h = React.createElement;
+    const imgs = srcs.map((src, i) => h('img', {
+      key: i, src, onClick,
+      style: { flex: '0 0 100%', scrollSnapAlign: 'center', width: '100%', height: maxH, objectFit: 'cover', objectPosition: 'center', background: '#EFEBE2', borderRadius: 12, display: 'block', cursor: onClick ? 'pointer' : 'default' }
+    }));
+    let rowEl = null;
+    const row = h('div', {
+      ref: el => { rowEl = el; },
+      style: { display: 'flex', gap: 8, overflowX: 'auto', scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch', borderRadius: 12, marginTop: 14, scrollbarWidth: 'none' }
+    }, imgs);
+    if (srcs.length < 2) return row;
+    const arrow = (dir, side) => h('button', {
+      onClick: ev => { ev.stopPropagation(); if (rowEl) rowEl.scrollBy({ left: dir * rowEl.clientWidth * 0.92, behavior: 'smooth' }); },
+      style: { position: 'absolute', top: '50%', [side]: 10, transform: 'translateY(-50%)', border: 'none', background: 'none', padding: 0, color: '#fff', cursor: 'pointer', fontSize: 30, lineHeight: 1, textShadow: '0 1px 4px rgba(0,0,0,.5)', zIndex: 3 }
+    }, dir < 0 ? '‹' : '›');
+    const badge = h('span', {
+      style: { position: 'absolute', top: 24, right: 12, background: 'rgba(28,24,18,.6)', color: '#fff', fontSize: 11, padding: '3px 9px', borderRadius: 99, zIndex: 3 }
+    }, srcs.length + '장');
+    return h('div', { style: { position: 'relative' } }, row, arrow(-1, 'left'), arrow(1, 'right'), badge);
+  }
+  updateGroupMembers(gid, fn) {
+    this.setState(st => ({ groups: st.groups.map(g => g.id === gid ? Object.assign({}, g, { members: fn(g.members) }) : g), togetherFilter: 'all' }));
+  }
+  seedKakao() {
+    return [
+      { id: 'k1', name: '하늘', color: '#6D9DC5', status: '오늘도 감사한 하루 🌿', inApp: true },
+      { id: 'k2', name: '도윤', color: '#B08968', status: '', inApp: false },
+      { id: 'k3', name: '유진', color: '#C08497', status: '커피 한 잔의 여유', inApp: true },
+      { id: 'k4', name: '지호', color: '#7D8B6F', status: '', inApp: false },
+      { id: 'k5', name: '예린', color: '#9A8C98', status: '반가워요 :)', inApp: true },
+      { id: 'k6', name: '수민', color: '#C98A5E', status: '', inApp: false }
+    ];
+  }
+  seedFriends() {
+    return [
+      { id: 'f1', name: '지수', color: '#C08497' },
+      { id: 'f2', name: '현우', color: '#6D9DC5' },
+      { id: 'f3', name: '민준', color: '#B08968' },
+      { id: 'f4', name: '서연', color: '#7D8B6F' }
+    ];
+  }
+  seedPerson(texts, photos, backs) {
+    const e = {}; const today = new Date(); let ti = 0;
+    backs.forEach(back => {
+      const d = new Date(today); d.setDate(d.getDate() - back);
+      const entry = { items: texts[ti++ % texts.length] };
+      if (photos[back]) entry.photos = photos[back];
+      e[this.key(d)] = entry;
+    });
+    return e;
+  }
+  seedGroups() {
+    const partner = [
+      ['너가 끓여준 라면이 세상에서 제일 맛있었어', '오늘도 무사히 하루를 보낸 것', '퇴근하고 같이 본 영화'],
+      ['아침에 깨워줘서 지각 안 함 ㅎㅎ', '점심 산책길의 벚꽃', '주말 계획을 세운 것'],
+      ['네가 보내준 응원 메시지', '오랜만에 운동을 한 것', '따뜻한 이불 속'],
+      ['같이 장 보러 간 시간', '동료와의 좋은 회의', '저녁 노을이 예뻤어'],
+      ['너의 웃는 얼굴', '무사히 마감을 끝낸 것', '새로 배운 요리 레시피']
+    ];
+    const mom = [
+      ['우리 딸이 전화해준 것', '텃밭 상추가 잘 자란 것', '아버지랑 산책한 저녁'],
+      ['오랜 친구와의 점심', '드라마가 재밌었던 것', '건강히 하루를 보낸 것'],
+      ['손주 사진을 받은 것', '맛있게 지은 밥', '따뜻한 봄 날씨']
+    ];
+    const sib = [
+      ['형이 게임 같이 해준 거', '시험 하나 끝난 것', '편의점 신상 라면'],
+      ['버스 자리에 앉은 것', '친구랑 농구한 것', '용돈 받은 날 ㅋㅋ'],
+      ['늦잠 잔 주말', '엄마 반찬 최고', '좋아하는 웹툰 업데이트']
+    ];
+    return [
+      { id: 'couple', name: '민준과 나', icon: 'ph-heart-straight', members: [
+        { name: '나', mine: true },
+        { name: '민준', color: '#B08968', entries: this.seedPerson(partner, { 1: ['assets/p2.webp', 'assets/p4.webp'], 3: ['assets/photo-town.jpg', 'assets/photo-poster.jpg', 'assets/p3.webp'], 4: ['assets/p1.webp', 'assets/p5.webp', 'assets/photo-beach.jpg'], 9: ['assets/photo-beach.jpg', 'assets/p5.webp'], 12: ['assets/p3.webp'] }, [1, 3, 4, 7, 9, 12, 16, 21]) }
+      ] },
+      { id: 'family', name: '우리 가족', icon: 'ph-users-three', members: [
+        { name: '나', mine: true },
+        { name: '엄마', color: '#9A8C98', entries: this.seedPerson(mom, { 2: ['assets/photo-flower.jpg', 'assets/p4.webp'], 5: ['assets/photo-flower.jpg', 'assets/photo-poster.jpg', 'assets/p3.webp'], 8: ['assets/p1.webp', 'assets/p2.webp'] }, [2, 5, 8, 14, 19]) },
+        { name: '동생', color: '#6D9DC5', entries: this.seedPerson(sib, {}, [1, 4, 6, 11, 17]) }
+      ] }
+    ];
+  }
+  componentDidMount() {
+    const keys = Object.keys(this.state.entries).filter(k => k !== this.todayKey());
+    if (keys.length) this.setState({ memKey: keys[Math.floor(Math.random() * keys.length)] });
+  }
+  showToast(msg) {
+    this.setState({ toast: msg });
+    clearTimeout(this._tt); this._tt = setTimeout(() => this.setState({ toast: '' }), 2200);
+  }
+  dateLabel(k, withYear) {
+    const [y, m, d] = k.split('-').map(Number);
+    const day = ['일', '월', '화', '수', '목', '금', '토'][new Date(y, m - 1, d).getDay()];
+    return (withYear ? y + '년 ' : '') + m + '월 ' + d + '일 ' + day + '요일';
+  }
+  streaks() {
+    const e = this.state.entries; let cur = 0; const d = new Date();
+    if (!e[this.key(d)]) d.setDate(d.getDate() - 1);
+    while (e[this.key(d)]) { cur++; d.setDate(d.getDate() - 1); }
+    const keys = Object.keys(e).sort(); let best = 0, run = 0, prev = null;
+    keys.forEach(k => {
+      if (prev) { const a = new Date(prev), b = new Date(k); run = (b - a === 86400000) ? run + 1 : 1; }
+      else run = 1;
+      if (run > best) best = run; prev = k;
+    });
+    return { cur, best: Math.max(best, cur) };
+  }
+  renderVals() {
+    const s = this.state, e = s.entries, tk = this.todayKey();
+    const accent = this.props.accent ?? '#7D8B6F';
+    const tab = a => 'all:unset;cursor:pointer;font-size:14px;padding:4px 0;' + (s.screen === a ? 'color:#37322C;font-weight:600;border-bottom:1.5px solid #37322C' : 'color:#9C958A');
+    const chip = on => 'border:1px solid ' + (on ? '#37322C' : '#E0DACF') + ';background:' + (on ? '#37322C' : '#fff') + ';color:' + (on ? '#FAF8F3' : '#8A8378') + ';font-size:13px;padding:8px 16px;border-radius:99px;cursor:pointer';
+    const today = e[tk], editing = s.editing;
+    const savedToday = !!today && !editing;
+    const filled = s.draft.filter(t => t.trim()).length;
+    const selKey = s.selectedKey && e[s.selectedKey] ? s.selectedKey : (e[tk] ? tk : Object.keys(e).sort().reverse()[0] || null);
+    const selEntry = selKey ? e[selKey] : null;
+    const now = new Date();
+    const view = new Date(now.getFullYear(), now.getMonth() + s.monthOff, 1);
+    const firstDow = view.getDay(), dim = new Date(view.getFullYear(), view.getMonth() + 1, 0).getDate();
+    const calCells = [];
+    for (let i = 0; i < firstDow; i++) calCells.push({ day: '', disabled: true, style: 'border:none;background:none' });
+    for (let d = 1; d <= dim; d++) {
+      const k = this.key(new Date(view.getFullYear(), view.getMonth(), d));
+      const has = !!e[k], isT = k === tk, sel = k === selKey;
+      const srcs = has ? this.photosOf(e[k]).slice(0, 3) : [];
+      const H = React.createElement;
+      let content, style;
+      if (has) {
+        style = 'aspect-ratio:0.72;border-radius:11px;padding:5px;box-sizing:border-box;cursor:pointer;display:flex;flex-direction:column;gap:3px;background:#fff;transition:transform .12s;border:' + (sel ? '2px solid ' + accent : '1px solid #EAE4DA') + ';box-shadow:0 1px 3px rgba(80,70,55,.06)';
+        const header = H('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 1px' } },
+          H('span', { style: { fontSize: 11, fontWeight: 700, color: isT ? accent : '#B5A996', fontFamily: "'Gowun Batang',serif" } }, String(d)),
+          H('span', { style: { color: '#3E382F', lineHeight: 0 } }, this.moodFace(e[k].mood || 0, 18)));
+        content = H('div', { style: { display: 'flex', flexDirection: 'column', gap: 3, height: '100%', minHeight: 0 } },
+          header,
+          srcs.length ? this.dayCollage(srcs, 7)
+                      : H('div', { style: { flex: 1, minHeight: 0, borderRadius: 7, background: accent + '18' } }));
+      } else {
+        style = 'aspect-ratio:0.72;border-radius:11px;display:flex;align-items:flex-start;justify-content:flex-start;padding:6px;box-sizing:border-box;background:none;border:1px dashed #ECE7DD';
+        content = H('span', { style: { fontSize: 11, color: isT ? '#37322C' : '#CFC8BA', fontWeight: isT ? 700 : 400, fontFamily: "'Gowun Batang',serif" } }, String(d));
+      }
+      calCells.push({ content, disabled: !has, onClick: () => this.setState({ selectedKey: k }), style });
+    }
+
+    const st = this.streaks();
+    const gm = s.groupModal;
+    const gmPalette = ['#B08968', '#9A8C98', '#6D9DC5', '#C08497', '#7D8B6F', '#C98A5E'];
+    const setGm = patch => this.setState(st => ({ groupModal: Object.assign({}, st.groupModal, patch) }));
+    const grp = s.groups.find(g => g.id === s.currentGroup) || s.groups[0];
+    const members = grp.members.map(m => Object.assign({}, m, { color: m.mine ? accent : m.color }));
+    const memberEntries = m => m.mine ? e : m.entries;
+    const memberLatestPhoto = m => {
+      const ent = memberEntries(m), keys = Object.keys(ent).sort().reverse();
+      for (let i = 0; i < keys.length; i++) { const p = this.photosOf(ent[keys[i]]); if (p.length) return p[0]; }
+      return null;
+    };
+    // 마음 밭 계산
+    const gCombined = {}, memberCounts = {}, wordCounts = {};
+    let gTotal = 0;
+    const stops = { '오늘': 1, '같이': 1, '내가': 1, '너의': 1, '오랜만에': 1, '우리': 1, '정말': 1, '너무': 1, '하루를': 1, '것': 1, '함께': 1, '있는': 1, '있었어': 1, '했다': 1 };
+    members.forEach(m => {
+      const ent = memberEntries(m); memberCounts[m.name] = 0;
+      Object.keys(ent).forEach(k => {
+        (gCombined[k] = gCombined[k] || []).push(m);
+        gTotal += ent[k].items.length; memberCounts[m.name] += ent[k].items.length;
+        ent[k].items.forEach(t => t.replace(/[.,!?~"'’ㅎㅋ]/g, ' ').split(/\s+/).forEach(w => {
+          w = w.trim(); if (w.length >= 2 && !stops[w]) wordCounts[w] = (wordCounts[w] || 0) + 1;
+        }));
+      });
+    });
+    const stages = [
+      { min: 0, emoji: '🌱', name: '씨앗', next: 10 },
+      { min: 10, emoji: '🌿', name: '새싹', next: 30 },
+      { min: 30, emoji: '🌸', name: '꽃밭', next: 60 },
+      { min: 60, emoji: '🌳', name: '우거진 밭', next: null }
+    ];
+    let gStage = stages[0];
+    stages.forEach(st2 => { if (gTotal >= st2.min) gStage = st2; });
+    const gardenTints = { '씨앗': '#F1EEE6', '새싹': '#E9F0E3', '꽃밭': '#F3ECEF', '우거진 밭': '#E5EFE3' };
+    const prog = gStage.next ? Math.min(100, Math.round((gTotal - gStage.min) / (gStage.next - gStage.min) * 100)) : 100;
+    const wk = Object.keys(wordCounts).sort((a, b) => wordCounts[b] - wordCounts[a]);
+    const topKw = wk[0];
+    const quotes = ['감사는 반복될수록 선명해집니다.', '작은 마음이 모여 밭이 되었어요.', '오늘의 감사가 내일의 꽃이 됩니다.', '함께 심은 마음은 더 무성해집니다.'];
+    const monthCount = Object.keys(e).filter(k => k.startsWith(tk.slice(0, 7))).length;
+    const totalItems = Object.values(e).reduce((a, v) => a + v.items.length, 0);
+    const dayDots = [];
+    for (let i = 13; i >= 0; i--) {
+      const d = new Date(); d.setDate(d.getDate() - i);
+      const has = !!e[this.key(d)];
+      dayDots.push({ label: this.dateLabel(this.key(d)), style: 'flex:1;height:34px;border-radius:7px;background:' + (has ? accent : '#F0EDE5') });
+    }
+    const det = s.detailKey ? e[s.detailKey] : null;
+    const mem = s.memKey ? e[s.memKey] : null;
+    const dsetter = i => ev => { const d = s.draft.slice(); d[i] = ev.target.value; this.setState({ draft: d }); };
+    return {
+      isToday: s.screen === 'today', isArchive: s.screen === 'archive', isStats: s.screen === 'stats', isSettings: s.screen === 'settings', isTogether: s.screen === 'together',
+      goToday: () => this.setState({ screen: 'today' }), goArchive: () => this.setState({ screen: 'archive' }),
+      goStats: () => this.setState({ screen: 'stats' }), goSettings: () => this.setState({ screen: 'settings' }),
+      goTogether: () => this.setState({ screen: 'together' }),
+      tabToday: tab('today'), tabArchive: tab('archive'), tabStats: tab('stats'), tabSettings: tab('settings'), tabTogether: tab('together'),
+      todayLabel: this.dateLabel(tk, true),
+      greeting: (s.name ? s.name + '님, ' : '') + '안녕하세요.',
+      savedToday, notSavedToday: !savedToday,
+      savedItems: today ? today.items.map((t, i) => ({ n: ['一', '二', '三'][i] || i + 1, text: t })) : [],
+      savedPhoto: !!(today && this.photosOf(today).length),
+      savedPhotoImg: today ? this.photoSlider(this.photosOf(today), 300) : null,
+      streakLabel: st.cur + '일 연속 기록 중 🔥',
+      editToday: () => this.setState({ editing: true, draft: [today.items[0] || '', today.items[1] || '', today.items[2] || ''], photos: this.photosOf(today), draftMood: today.mood || 0 }),
+      moodPicker: [0, 3, 1, 4, 2].map(mi => ({
+        face: this.moodFace(mi, 30), onClick: () => this.setState({ draftMood: mi }),
+        style: 'border:none;cursor:pointer;border-radius:50%;padding:5px;line-height:0;color:#3E382F;background:' + (s.draftMood === mi ? accent + '2e' : 'transparent')
+      })),
+      moodTodayFace: this.moodFace(today ? (today.mood || 0) : 0, 30),
+      shareToday: () => this.showToast('공유 링크를 복사했어요'),
+      d1: s.draft[0], d2: s.draft[1], d3: s.draft[2],
+      onD1: dsetter(0), onD2: dsetter(1), onD3: dsetter(2),
+      photoPreview: s.photos.length > 0,
+      draftPhotos: s.photos.map((src, i) => ({
+        img: React.createElement('img', { src, style: { width: 96, height: 96, objectFit: 'cover', borderRadius: 10, display: 'block' } }),
+        remove: () => this.setState(st => ({ photos: st.photos.filter((_, j) => j !== i) }))
+      })),
+      onPhoto: ev => {
+        const files = Array.from(ev.target.files || []); if (!files.length) return;
+        files.forEach(f => { const r = new FileReader(); r.onload = () => this.setState(st => ({ photos: st.photos.concat(r.result) })); r.readAsDataURL(f); });
+        ev.target.value = '';
+      },
+      saveDisabled: filled === 0,
+      saveBtnStyle: 'border:none;font-size:14px;font-weight:600;padding:12px 28px;border-radius:10px;transition:all .15s;' + (filled ? 'background:#37322C;color:#FAF8F3;cursor:pointer' : 'background:#EBE7DD;color:#B9B2A5;cursor:default'),
+      saveToday: () => {
+        if (!filled) return;
+        const items = s.draft.map(t => t.trim()).filter(Boolean);
+        const entries = Object.assign({}, e, { [tk]: Object.assign({ items, mood: s.draftMood }, s.photos.length ? { photos: s.photos } : {}) });
+        this.set({ entries, editing: false, draft: ['', '', ''], photos: [], draftMood: 0 });
+        this.showToast('오늘의 감사를 기록했어요 🌿');
+      },
+      hasMemory: !!mem && !editing, memDateLabel: s.memKey ? this.dateLabel(s.memKey, true) : '',
+      memPreview: mem ? mem.items[0] : '',
+      openMemory: () => this.setState({ detailKey: s.memKey }),
+      monthLabel: view.getFullYear() + '년 ' + (view.getMonth() + 1) + '월',
+      prevMonth: () => this.setState({ monthOff: s.monthOff - 1 }),
+      nextMonth: () => this.setState({ monthOff: s.monthOff + 1 }),
+      goThisMonth: () => this.setState({ monthOff: 0, selectedKey: tk }),
+      calCells,
+      hasSelected: !!selEntry, noSelected: !selEntry,
+      selDateLabel: selKey ? this.dateLabel(selKey, true) : '',
+      selItems: selEntry ? selEntry.items.map((t, i) => ({ n: ['一', '二', '三'][i] || i + 1, text: t, onClick: () => this.setState({ detailKey: selKey }) })) : [],
+      selPhotoImg: selEntry ? this.photoSlider(this.photosOf(selEntry), 320, () => this.setState({ detailKey: selKey })) : null,
+      streak: st.cur, bestStreak: st.best, monthCount, totalItems, dayDots,
+      detailOpen: !!det, closeDetail: () => this.setState({ detailKey: null }), stop: ev => ev.stopPropagation(),
+      detailDateLabel: s.detailKey ? this.dateLabel(s.detailKey, true) : '',
+      detailItems: det ? det.items.map((t, i) => ({ n: ['一', '二', '三'][i] || i + 1, text: t })) : [],
+      detailPhoto: !!(det && this.photosOf(det).length),
+      detailPhotoImg: det ? this.photoSlider(this.photosOf(det), 380) : null,
+      name: s.name, onName: ev => this.set({ name: ev.target.value }),
+      profileStyle: 'width:56px;height:56px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;font-family:\'Gowun Batang\',serif;font-size:20px;color:#fff;' + (s.profilePhoto ? 'background-image:url(' + s.profilePhoto + ');background-size:cover;background-position:center' : 'background:' + accent),
+      profileFallback: s.profilePhoto ? '' : ((s.name || '나').trim().charAt(0)),
+      onProfilePhoto: ev => { const f = ev.target.files && ev.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = () => this.set({ profilePhoto: r.result }); r.readAsDataURL(f); ev.target.value = ''; },
+      friendCount: s.friends.length,
+      friendList: s.friends.map(f => ({
+        name: f.name, initial: f.name.trim().charAt(0),
+        avatarStyle: 'width:34px;height:34px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;font-size:13px;color:#fff;background:' + f.color,
+        remove: () => this.set({ friends: s.friends.filter(x => x.id !== f.id) })
+      })),
+      friendInput: s.friendInput,
+      onFriendInput: ev => this.setState({ friendInput: ev.target.value }),
+      addFriend: () => {
+        const nm = s.friendInput.trim(); if (!nm) return;
+        const pal = ['#C08497', '#6D9DC5', '#B08968', '#7D8B6F', '#9A8C98', '#C98A5E'];
+        this.set({ friends: s.friends.concat({ id: 'f' + Date.now(), name: nm, color: pal[s.friends.length % pal.length] }), friendInput: '' });
+      },
+      toggleReminder: () => this.set({ reminder: !s.reminder }),
+      reminderStyle: 'border:none;cursor:pointer;width:44px;height:26px;border-radius:99px;padding:2px;display:flex;transition:background .2s;background:' + (s.reminder ? accent : '#DDD7CB') + ';justify-content:' + (s.reminder ? 'flex-end' : 'flex-start'),
+      reminderKnob: 'width:22px;height:22px;border-radius:50%;background:#fff;display:block',
+      kakaoShare: () => this.showToast('카카오톡으로 감사일기를 공유했어요'),
+      backupLabel: '방금 저장됨',
+      openKakaoSheet: () => this.setState({ kakaoSheet: true }),
+      closeKakaoSheet: () => this.setState({ kakaoSheet: false }),
+      kakaoSheetOpen: s.kakaoSheet,
+      kakaoInviteMore: () => this.showToast('카카오톡 친구 선택 창을 열었어요'),
+      kakaoFriends: s.kakaoAll.filter(k => k.inApp).map(k => {
+        const invited = !!s.kakaoInvited[k.id] || s.friends.some(f => f.name === k.name);
+        return {
+          name: k.name, initial: k.name.slice(0, 1),
+          statusMsg: k.status || '감사일기 사용 중',
+          avatarStyle: 'width:40px;height:40px;border-radius:14px;flex:none;display:flex;align-items:center;justify-content:center;font-family:\'Gowun Batang\',serif;font-size:16px;color:#fff;background:' + k.color,
+          btnLabel: invited ? '추가됨' : '추가',
+          btnStyle: 'border:none;font-size:12.5px;font-weight:700;padding:8px 14px;border-radius:8px;flex:none;cursor:' + (invited ? 'default' : 'pointer') + ';' + (invited ? 'background:#F0EDE5;color:#B9B2A5' : 'background:#37322C;color:#FAF8F3'),
+          invite: () => {
+            if (invited) return;
+            this.set({ friends: s.friends.concat({ id: 'f' + Date.now(), name: k.name, color: k.color }), kakaoInvited: Object.assign({}, s.kakaoInvited, { [k.id]: true }) });
+            this.showToast(k.name + '님을 친구로 추가했어요');
+          }
+        };
+      }),
+      resetData: () => { const entries = this.seed(); this.set({ entries, onboarded: true }); this.showToast('데이터를 초기화했어요'); },
+      groupTabs: s.groups.map(g => ({
+        icon: g.icon || 'ph-heart-straight', name: g.name,
+        onClick: () => this.setState({ currentGroup: g.id, togetherFilter: 'all' }),
+        style: 'display:inline-flex;align-items:center;gap:7px;border:1px solid ' + (g.id === s.currentGroup ? '#37322C' : '#E0DACF') + ';background:' + (g.id === s.currentGroup ? '#37322C' : '#fff') + ';color:' + (g.id === s.currentGroup ? '#FAF8F3' : '#8A8378') + ';font-size:13px;padding:8px 15px;border-radius:99px;cursor:pointer;white-space:nowrap;flex:none;line-height:1'
+      })),
+      newGroup: () => this.setState({ groupModal: { step: 0, name: '', emoji: '💛', memberInput: '', members: [] } }),
+      groupName: grp.name,
+      groupMemberLabel: members.map(m => m.name).join(' · '),
+      groupAvatars: members.slice(0, 4).map((m, i) => ({
+        initial: m.name.slice(0, 1),
+        style: 'width:40px;height:40px;border-radius:50%;background:' + m.color + ';color:#fff;display:flex;align-items:center;justify-content:center;font-family:\'Gowun Batang\',serif;font-size:15px;' + (i ? 'margin-left:-10px;border:2px solid #fff' : '')
+      })),
+      togetherDays: (() => { const days = new Set(); members.forEach(m => Object.keys(memberEntries(m)).forEach(k => days.add(k))); return days.size; })(),
+      filterChips: [{ name: 'all', label: '전체' }].concat(members.map(m => ({ name: m.name, label: m.name }))).map(f => ({
+        label: f.label, onClick: () => this.setState({ togetherFilter: f.name }), style: chip(s.togetherFilter === f.name)
+      })),
+      memberModalOpen: s.memberModal, groupIcon: grp.icon || 'ph-heart-straight',
+      openMemberModal: () => this.setState({ memberModal: true, memberInput: '' }),
+      closeMemberModal: () => this.setState({ memberModal: false }),
+      groupMemberRows: members.map((m, i) => ({
+        name: m.name, initial: m.name.trim().charAt(0), tag: m.mine ? '(나)' : '', removable: !m.mine,
+        avatarStyle: 'width:36px;height:36px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff;background:' + m.color,
+        remove: () => this.updateGroupMembers(grp.id, ms => ms.filter(x => x.name !== m.name))
+      })),
+      memberFriendChips: s.friends.filter(f => !grp.members.some(m => m.name === f.name)).map(f => ({
+        name: f.name,
+        onClick: () => { this.updateGroupMembers(grp.id, ms => ms.concat({ name: f.name, color: f.color, entries: {} })); this.showToast(f.name + '님을 초대했어요'); },
+        style: 'display:inline-flex;align-items:center;gap:6px;border:1.5px solid #E0DACF;background:#fff;color:#8A8378;font-size:13px;padding:8px 14px;border-radius:99px;cursor:pointer'
+      })),
+      memberInput: s.memberInput,
+      onMemberInput: ev => this.setState({ memberInput: ev.target.value }),
+      addMemberDirect: () => {
+        const nm = s.memberInput.trim(); if (!nm || grp.members.some(m => m.name === nm)) { this.setState({ memberInput: '' }); return; }
+        const pal = ['#C08497', '#6D9DC5', '#B08968', '#7D8B6F', '#9A8C98', '#C98A5E'];
+        this.updateGroupMembers(grp.id, ms => ms.concat({ name: nm, color: pal[ms.length % pal.length], entries: {} }));
+        this.setState({ memberInput: '' });
+      },
+      feed: (() => {
+        const rows = [];
+        members.forEach(m => {
+          if (s.togetherFilter !== 'all' && s.togetherFilter !== m.name) return;
+          const ent = memberEntries(m);
+          Object.keys(ent).forEach(k => {
+            const id = grp.id + '-' + m.name + '-' + k;
+            const liked = !!s.hearts[id];
+            const base = 2 + (k.charCodeAt(9) % 4);
+            rows.push({
+              id, sort: k, author: m.name, initial: m.name.slice(0, 1),
+              avatarStyle: 'width:30px;height:30px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;font-family:\'Gowun Batang\',serif;font-size:13px;color:#fff;background:' + m.color,
+              dateLabel: this.dateLabel(k),
+              cardStyle: 'background:#fff;border:1px solid ' + (m.mine ? m.color + '44' : '#E9E4DB') + ';border-left:3px solid ' + m.color + ';border-radius:14px;padding:18px 20px',
+              items: ent[k].items.map((t, i) => ({ n: ['一', '二', '三'][i] || i + 1, text: t })),
+              photoImg: this.photoSlider(this.photosOf(ent[k]), 280),
+              heartCount: base + (liked ? 1 : 0),
+              heartIcon: React.createElement('i', { className: (liked ? 'ph-fill' : 'ph') + ' ph-heart', style: { fontSize: 17 } }),
+              heartStyle: 'all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:6px;padding:4px 6px;border-radius:8px;color:' + (liked ? '#C86B5C' : '#B9B2A5'),
+              toggleHeart: () => this.setState(st => ({ hearts: Object.assign({}, st.hearts, { [id]: !st.hearts[id] }) })),
+              commentCount: (s.comments[id] || []).length,
+              commentStyle: 'all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:6px;padding:4px 6px;border-radius:8px;color:' + (s.commentModal === id ? '#7D8B6F' : '#B9B2A5'),
+              openComments: () => this.setState(st => ({ commentModal: st.commentModal === id ? null : id, commentDraft: '', stickerPicker: false })),
+              commentsOpen: s.commentModal === id,
+              commentEmpty: (s.comments[id] || []).length === 0,
+              commentItems: (s.comments[id] || []).map((c, ci) => ({
+                author: c.author, text: c.text || '', isSticker: !!c.sticker, isText: !c.sticker, initial: c.author.slice(0, 1),
+                mine: c.author === (s.name || '나'),
+                remove: () => this.setState(st => ({ comments: Object.assign({}, st.comments, { [id]: (st.comments[id] || []).filter((_, j) => j !== ci) }) })),
+                stickerImg: c.sticker ? React.createElement('img', { src: 'assets/stickers/' + c.sticker + '.png', style: { width: 68, height: 68, objectFit: 'contain', display: 'block', marginTop: 2 } }) : null,
+                avatarStyle: 'width:26px;height:26px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;font-family:\'Gowun Batang\',serif;font-size:11px;color:#fff;background:' + (c.color || '#B0713F')
+              }))
+            });
+          });
+        });
+        return rows.sort((a, b) => a.sort < b.sort ? 1 : (a.sort > b.sort ? -1 : (a.author < b.author ? -1 : 1)));
+      })(),
+      shareGarden: () => this.showToast('마음 밭 카드를 저장했어요 🖼'),
+      gardenBg: 'linear-gradient(180deg,' + (gardenTints[gStage.name] || '#EEF0E8') + ',#F7F4ED)',
+      gardenStageEmoji: gStage.emoji, gardenStageName: gStage.name,
+      gardenTotal: gTotal, gardenProgress: prog + '%',
+      gardenNextLabel: gStage.next ? '다음 단계까지 감사 ' + Math.max(0, gStage.next - gTotal) + '개' : '가장 무성한 밭이에요',
+      memberShare: members.map(m => {
+        const c = memberCounts[m.name] || 0;
+        return {
+          name: m.name, count: c,
+          barStyle: 'flex:' + (c || 0.001) + ';background:' + m.color + ';min-width:' + (c ? 2 : 0) + 'px',
+          dotStyle: 'width:10px;height:10px;border-radius:50%;background:' + m.color + ';display:inline-block'
+        };
+      }),
+      statHero: members.map(m => {
+        const photo = memberLatestPhoto(m);
+        return {
+          name: m.name,
+          style: 'flex:1;position:relative;min-width:0;overflow:hidden;' + (photo ? 'background-image:url(' + photo + ');background-size:cover;background-position:center' : 'background:' + m.color),
+          fallback: photo ? null : React.createElement('div', { style: { position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontFamily: "'Gowun Batang',serif", fontSize: 30 } }, m.name.slice(0, 1)),
+          tagStyle: 'position:absolute;left:8px;top:8px;background:rgba(28,24,18,.5);color:#fff;font-size:11px;padding:3px 9px;border-radius:99px;z-index:2'
+        };
+      }),
+      gardenCells: (() => {
+        const cells = [];
+        for (let i = 34; i >= 0; i--) {
+          const d = new Date(); d.setDate(d.getDate() - i); const k = this.key(d);
+          const hits = gCombined[k] || [];
+          let items = 0, dayPhotos = [];
+          hits.forEach(m => { const en = memberEntries(m)[k] || { items: [] }; items += en.items.length; this.photosOf(en).forEach(p => dayPhotos.push(p)); });
+          const color = hits.length ? hits[0].color : null;
+          const has = dayPhotos.length > 0;
+          cells.push({
+            label: this.dateLabel(k) + (items ? ' · 감사 ' + items + '개' : '') + (dayPhotos.length > 1 ? ' · 사진 ' + dayPhotos.length + '장' : ''),
+            content: has ? this.dayCollage(dayPhotos.slice(0, 3), 8) : null,
+            style: 'aspect-ratio:1;border-radius:8px;overflow:hidden;display:flex;' +
+              (has ? 'border:1px solid ' + (color || '#E9E4DB') + '55'
+                   : (color ? 'background:' + color + '22;border:1px solid ' + color + '44'
+                            : 'background:#F4F1EA;border:1px solid #EDE9E0'))
+          });
+        }
+        return cells;
+      })(),
+      topKeyword: topKw || '작은 행복', topKeywordCount: topKw ? wordCounts[topKw] : 1,
+      flowerBg: '#F3EEE7',
+      flowerPhotoStyle: (() => {
+        let ph = null; members.forEach(m => { if (!ph) ph = memberLatestPhoto(m); });
+        return 'width:64px;height:64px;border-radius:12px;flex:none;overflow:hidden;' + (ph ? 'background-image:url(' + ph + ');background-size:cover;background-position:center' : 'background:' + accent + '33');
+      })(),
+      flowerFallback: null,
+      gardenQuote: quotes[gTotal % quotes.length],
+      commentDraft: s.commentDraft,
+      onCommentDraft: ev => this.setState({ commentDraft: ev.target.value }),
+      stickerPickerOpen: s.stickerPicker,
+      toggleStickerPicker: () => this.setState(st => ({ stickerPicker: !st.stickerPicker })),
+      stickerBtnStyle: 'border:1px solid ' + (s.stickerPicker ? '#7D8B6F' : '#E0DACF') + ';background:' + (s.stickerPicker ? '#EEF1E9' : '#FAF8F3') + ';color:' + (s.stickerPicker ? '#5F6E52' : '#B9B2A5') + ';cursor:pointer;flex:none;width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;padding:0',
+      stickerSections: (() => {
+        const n = (p, c) => Array.from({ length: c }, (_, i) => p + String(i + 1).padStart(2, '0'));
+        const favs = ['tux21', 'cat10', 'cub19', 'bear12', 'heart', 'smile', 'thumbsup', 'clap', 'tux12', 'cat24', 'cub02', 'bear24'];
+        const defs = [
+          { label: '⭐ 자주 쓰는', items: favs },
+          { label: '곰', items: n('bear', 24) },
+          { label: '고양이', items: n('cat', 24) },
+          { label: '아기곰', items: n('cub', 24) },
+          { label: '턱시도 고양이', items: n('tux', 24) },
+          { label: '기본', items: ['heart','heart-outline','smile','sad','thumbsup','clap','star','clover','flower','cake','beer','camera','bulb','pencil','coins','hand','skull','dead','calendar','pin'] }
+        ];
+        const post = name => () => {
+          if (!s.commentModal) return;
+          const id = s.commentModal, list = (s.comments[id] || []).concat({ author: s.name || '나', sticker: name, color: accent });
+          this.setState({ comments: Object.assign({}, s.comments, { [id]: list }), stickerPicker: false });
+        };
+        return defs.map(d => ({
+          label: d.label,
+          items: d.items.map(name => ({
+            img: React.createElement('img', { src: 'assets/stickers/' + name + '.png', style: { width: 40, height: 40, objectFit: 'contain', display: 'block' } }),
+            onClick: post(name)
+          }))
+        }));
+      })(),
+      addComment: () => {
+        const t = s.commentDraft.trim(); if (!t || !s.commentModal) return;
+        const id = s.commentModal, list = (s.comments[id] || []).concat({ author: s.name || '나', text: t });
+        this.setState({ comments: Object.assign({}, s.comments, { [id]: list }), commentDraft: '' });
+      },
+      groupModalOpen: !!gm, gmStep0: gm && gm.step === 0, gmStep1: gm && gm.step === 1,
+      closeGroupModal: () => this.setState({ groupModal: null }),
+      gmName: gm ? gm.name : '', gmEmoji: gm ? gm.emoji : 'ph-heart-straight',
+      onGmName: ev => setGm({ name: ev.target.value }),
+      emojiChoices: ['ph-heart-straight', 'ph-users-three', 'ph-house-line', 'ph-hand-heart', 'ph-flower-lotus', 'ph-sparkle', 'ph-star', 'ph-tree'].map(ch => ({
+        char: ch, onClick: () => setGm({ emoji: ch }),
+        style: 'font-size:20px;width:46px;height:46px;border-radius:12px;cursor:pointer;color:#3E382F;display:flex;align-items:center;justify-content:center;background:' + (gm && gm.emoji === ch ? '#F0EDE5' : '#fff') + ';border:1.5px solid ' + (gm && gm.emoji === ch ? '#7D8B6F' : '#E9E4DB')
+      })),
+      gmNextDisabled: !(gm && gm.name.trim()),
+      gmNextStyle: 'width:100%;margin-top:26px;border:none;font-size:14.5px;font-weight:600;padding:15px;border-radius:11px;' + (gm && gm.name.trim() ? 'background:#37322C;color:#FAF8F3;cursor:pointer' : 'background:#EBE7DD;color:#B9B2A5;cursor:default'),
+      gmNext: () => { if (gm && gm.name.trim()) setGm({ step: 1 }); },
+      gmBack: () => setGm({ step: 0 }),
+      gmMemberInput: gm ? gm.memberInput : '',
+      onGmMemberInput: ev => setGm({ memberInput: ev.target.value }),
+      gmMembers: gm ? gm.members.map((nm, i) => ({ name: nm, bg: gmPalette[i % gmPalette.length], remove: () => setGm({ members: gm.members.filter((_, j) => j !== i) }) })) : [],
+      gmFriendChips: gm ? s.friends.map(f => {
+        const on = gm.members.indexOf(f.name) >= 0;
+        return {
+          name: f.name, onClick: () => setGm({ members: on ? gm.members.filter(m => m !== f.name) : gm.members.concat(f.name) }),
+          style: 'display:inline-flex;align-items:center;gap:6px;border:1.5px solid ' + (on ? '#7D8B6F' : '#E0DACF') + ';background:' + (on ? '#EEF1E9' : '#fff') + ';color:' + (on ? '#4A5540' : '#8A8378') + ';font-size:13px;padding:8px 14px;border-radius:99px;cursor:pointer' + (on ? ';font-weight:600' : '')
+        };
+      }) : [],
+      gmAddMember: () => { const nm = (gm && gm.memberInput || '').trim(); if (!nm) return; setGm({ members: gm.members.concat(nm), memberInput: '' }); },
+      gmCopyInvite: () => this.showToast('카카오톡으로 초대를 보냈어요'),
+      gmCreate: () => {
+        if (!gm) return;
+        const id = 'g' + Date.now();
+        const members = [{ name: '나', mine: true }].concat(gm.members.map((nm, i) => ({ name: nm, color: gmPalette[i % gmPalette.length], entries: {} })));
+        this.setState(st => ({ groups: st.groups.concat({ id, name: gm.name.trim(), icon: gm.emoji, members }), currentGroup: id, togetherFilter: 'all', groupModal: null }));
+        this.showToast(gm.name.trim() + ' 그룹을 만들었어요');
+      },
+      showOnboarding: !s.onboarded, obStep0: s.obStep === 0, obStep1: s.obStep === 1,
+      obNext: () => this.setState(st => ({ obStep: 1, obName: st.obName || '민지' })),
+      obName: s.obName, onObName: ev => this.setState({ obName: ev.target.value }),
+      obFinish: () => this.set({ onboarded: true, name: s.obName.trim() }),
+      toastOpen: !!s.toast, toast: s.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

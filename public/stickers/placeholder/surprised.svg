@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" fill="none">
+  <circle cx="34" cy="30" r="9" fill="none" stroke="#37322C" stroke-width="4"/>
+  <circle cx="86" cy="30" r="9" fill="none" stroke="#37322C" stroke-width="4"/>
+  <ellipse cx="60" cy="64" rx="40" ry="38" fill="#FFFFFF" stroke="#37322C" stroke-width="4"/>
+  <circle cx="47" cy="60" r="7" fill="none" stroke="#37322C" stroke-width="3.5"/>
+  <circle cx="73" cy="60" r="7" fill="none" stroke="#37322C" stroke-width="3.5"/>
+  <ellipse cx="60" cy="82" rx="8" ry="10" fill="#37322C"/>
+  <text x="94" y="26" font-family="Georgia, serif" font-size="22" fill="#37322C">?</text>
+  <text x="6" y="40" font-family="Georgia, serif" font-size="16" fill="#37322C">?</text>
+</svg>
