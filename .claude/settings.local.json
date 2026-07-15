@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(unzip -o \"Gratitude diary web app.zip\" -d ./_unzipped)",
+      "Bash(cd /Users/chunghyeonji/STUDY && ls -la)"
+    ]
+  }
+}
