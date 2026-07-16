@@ -8,9 +8,16 @@ import { StickerByName } from "@/components/ui/StickerImage";
 import { StickerPicker } from "./StickerPicker";
 import { toggleHeart } from "@/lib/actions/hearts";
 import { addComment, deleteComment } from "@/lib/actions/comments";
+import type { StickerItem } from "@/lib/stickers";
 import type { FeedEntry } from "./TogetherScreen";
 
-export function FeedCard({ entry }: { entry: FeedEntry }) {
+export function FeedCard({
+  entry,
+  placeholderStickers,
+}: {
+  entry: FeedEntry;
+  placeholderStickers: StickerItem[];
+}) {
   const [heartedByMe, setHeartedByMe] = useState(entry.heartedByMe);
   const [heartCount, setHeartCount] = useState(entry.heartCount);
   const [commentsOpen, setCommentsOpen] = useState(false);
@@ -122,7 +129,13 @@ export function FeedCard({ entry }: { entry: FeedEntry }) {
             </div>
           ))}
 
-          {stickerPickerOpen && <StickerPicker favorites={favorites} onPick={pickSticker} />}
+          {stickerPickerOpen && (
+            <StickerPicker
+              favorites={favorites}
+              onPick={pickSticker}
+              placeholderStickers={placeholderStickers}
+            />
+          )}
 
           <div className="flex items-center gap-2">
             <button

@@ -8,6 +8,7 @@ import { GroupCreateModal } from "./GroupCreateModal";
 import { MemberManageModal } from "./MemberManageModal";
 import { GroupIcon } from "@/lib/group-icons";
 import type { GroupSummary, MemberInfo } from "@/lib/group-data";
+import type { StickerItem } from "@/lib/stickers";
 
 export type { GroupSummary, MemberInfo };
 export type FeedComment = {
@@ -38,6 +39,7 @@ export function TogetherScreen({
   feed,
   friendNames,
   myUserId,
+  placeholderStickers,
 }: {
   groups: GroupSummary[];
   activeGroup: GroupSummary | null;
@@ -45,6 +47,7 @@ export function TogetherScreen({
   feed: FeedEntry[];
   friendNames: string[];
   myUserId: string;
+  placeholderStickers: StickerItem[];
 }) {
   const [filter, setFilter] = useState<string>("all");
   const [createOpen, setCreateOpen] = useState(false);
@@ -166,7 +169,7 @@ export function TogetherScreen({
           </p>
         )}
         {filtered.map((entry) => (
-          <FeedCard key={entry.entryId} entry={entry} />
+          <FeedCard key={entry.entryId} entry={entry} placeholderStickers={placeholderStickers} />
         ))}
       </div>
 

@@ -2,10 +2,12 @@
  * Sticker manifest for the comment composer's sticker picker.
  *
  * `comments.sticker` stores just the name below (e.g. "placeholder:hi"),
- * never image bytes. "placeholder" stickers are original SVGs shipped in
- * public/stickers/placeholder/ — swap those files for real purchased
- * artwork later without touching this manifest or the DB. "icon" stickers
- * render a Phosphor icon directly, no image asset needed.
+ * never image bytes. "placeholder" stickers are images in
+ * public/stickers/placeholder/, discovered at request time by
+ * `listPlaceholderStickers()` (src/lib/sticker-files.ts) — drop a new
+ * PNG/SVG in that folder and it shows up with no code change. "icon"
+ * stickers render a Phosphor icon directly; kept only so older comments
+ * that used one still render, not offered in the picker anymore.
  */
 
 export type StickerItem =
@@ -17,21 +19,6 @@ export type StickerSection = {
   favorite?: boolean;
   items: StickerItem[];
 };
-
-export const PLACEHOLDER_STICKERS: StickerItem[] = [
-  { kind: "placeholder", name: "hi", label: "안녕" },
-  { kind: "placeholder", name: "thanks", label: "고마워" },
-  { kind: "placeholder", name: "clap", label: "짝짝짝" },
-  { kind: "placeholder", name: "thumbsup", label: "최고" },
-  { kind: "placeholder", name: "heart-eyes", label: "완전 좋아" },
-  { kind: "placeholder", name: "laugh", label: "하하하" },
-  { kind: "placeholder", name: "wink", label: "윙크" },
-  { kind: "placeholder", name: "surprised", label: "놀람" },
-  { kind: "placeholder", name: "cry", label: "엉엉" },
-  { kind: "placeholder", name: "party", label: "축하해" },
-  { kind: "placeholder", name: "zzz", label: "잘자" },
-  { kind: "placeholder", name: "wow", label: "우와" },
-];
 
 export const ICON_STICKERS: StickerItem[] = [
   { kind: "icon", name: "heart", label: "하트", icon: "Heart" },
@@ -54,11 +41,14 @@ export const ICON_STICKERS: StickerItem[] = [
   { kind: "icon", name: "pin", label: "핀", icon: "PushPin" },
 ];
 
-export function stickerSections(favoriteNames: string[]): StickerSection[] {
+export function stickerSections(
+  favoriteNames: string[],
+  placeholderStickers: StickerItem[],
+): StickerSection[] {
   const favorites = favoriteNames
     .map((full) => {
       const [kind, name] = full.split(":");
-      return [...PLACEHOLDER_STICKERS, ...ICON_STICKERS].find(
+      return [...placeholderStickers, ...ICON_STICKERS].find(
         (item) => item.kind === kind && item.name === name,
       );
     })
@@ -66,7 +56,7 @@ export function stickerSections(favoriteNames: string[]): StickerSection[] {
 
   const sections: StickerSection[] = [];
   if (favorites.length) sections.push({ label: "자주 쓰는", favorite: true, items: favorites });
-  sections.push({ label: "베어", items: PLACEHOLDER_STICKERS });
+  sections.push({ label: "베어", items: placeholderStickers });
   return sections;
 }
 

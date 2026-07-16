@@ -1,17 +1,19 @@
 "use client";
 
 import { Star } from "@phosphor-icons/react/dist/ssr";
-import { stickerFullName, stickerSections } from "@/lib/stickers";
+import { stickerFullName, stickerSections, type StickerItem } from "@/lib/stickers";
 import { StickerIcon } from "@/components/ui/StickerImage";
 
 export function StickerPicker({
   favorites,
   onPick,
+  placeholderStickers,
 }: {
   favorites: string[];
   onPick: (full: string) => void;
+  placeholderStickers: StickerItem[];
 }) {
-  const sections = stickerSections(favorites);
+  const sections = stickerSections(favorites, placeholderStickers);
   return (
     <div className="flex max-h-[260px] flex-col gap-3 overflow-y-auto rounded-[12px] bg-panel-3 p-3">
       {sections.map((section) => (

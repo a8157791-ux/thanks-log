@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { signPhotoUrls } from "@/lib/storage";
 import { dateLabel } from "@/lib/gratitude";
 import { loadGroupContext } from "@/lib/group-data";
+import { listPlaceholderStickers } from "@/lib/sticker-files";
 
 export default async function TogetherPage({
   searchParams,
@@ -22,6 +23,7 @@ export default async function TogetherPage({
     supabase.from("friends").select("friend_name").eq("user_id", user.id),
   ]);
   const friendNames = (friendRows ?? []).map((f) => f.friend_name);
+  const placeholderStickers = listPlaceholderStickers();
 
   if (!activeGroup) {
     return (
@@ -32,6 +34,7 @@ export default async function TogetherPage({
         feed={[]}
         friendNames={friendNames}
         myUserId={user.id}
+        placeholderStickers={placeholderStickers}
       />
     );
   }
@@ -108,6 +111,7 @@ export default async function TogetherPage({
       feed={feed}
       friendNames={friendNames}
       myUserId={user.id}
+      placeholderStickers={placeholderStickers}
     />
   );
 }
