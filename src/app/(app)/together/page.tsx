@@ -17,12 +17,10 @@ export default async function TogetherPage({
   } = await supabase.auth.getUser();
   if (!user) redirect("/");
 
-  const { groups, activeGroup, members } = await loadGroupContext(supabase, user.id, g);
-
-  const { data: friendRows } = await supabase
-    .from("friends")
-    .select("friend_name")
-    .eq("user_id", user.id);
+  const [{ groups, activeGroup, members }, { data: friendRows }] = await Promise.all([
+    loadGroupContext(supabase, user.id, g),
+    supabase.from("friends").select("friend_name").eq("user_id", user.id),
+  ]);
   const friendNames = (friendRows ?? []).map((f) => f.friend_name);
 
   if (!activeGroup) {
@@ -51,19 +49,22 @@ export default async function TogetherPage({
     const entries = entryRows ?? [];
     const entryIds = entries.map((e) => e.id);
     const allPaths = entries.flatMap((e) => e.photos);
-    const signedMap = await signPhotoUrls(supabase, allPaths);
 
-    const { data: heartRows } = entryIds.length
-      ? await supabase.from("hearts").select("entry_id, user_id").in("entry_id", entryIds)
-      : { data: [] as { entry_id: string; user_id: string }[] };
-
-    const { data: commentRows } = entryIds.length
-      ? await supabase
-          .from("comments")
-          .select("id, entry_id, user_id, body, sticker, created_at")
-          .in("entry_id", entryIds)
-          .order("created_at", { ascending: true })
-      : { data: [] as { id: string; entry_id: string; user_id: string; body: string | null; sticker: string | null }[] };
+    const [signedMap, { data: heartRows }, { data: commentRows }] = await Promise.all([
+      signPhotoUrls(supabase, allPaths),
+      entryIds.length
+        ? supabase.from("hearts").select("entry_id, user_id").in("entry_id", entryIds)
+        : Promise.resolve({ data: [] as { entry_id: string; user_id: string }[] }),
+      entryIds.length
+        ? supabase
+            .from("comments")
+            .select("id, entry_id, user_id, body, sticker, created_at")
+            .in("entry_id", entryIds)
+            .order("created_at", { ascending: true })
+        : Promise.resolve({
+            data: [] as { id: string; entry_id: string; user_id: string; body: string | null; sticker: string | null }[],
+          }),
+    ]);
 
     const memberByUserId = new Map(members.map((m) => [m.userId, m]));
 
