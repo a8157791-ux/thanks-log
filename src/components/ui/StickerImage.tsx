@@ -49,7 +49,7 @@ export function StickerByName({ full, size = 32 }: { full: string; size?: number
   if (kind === "placeholder") {
     return (
       <Image
-        src={`/stickers/placeholder/${name}.svg`}
+        src={`/stickers/placeholder/${name}.png`}
         alt={name}
         width={size}
         height={size}
@@ -64,7 +64,7 @@ export function StickerIcon({ item, size = 26 }: { item: StickerItem; size?: num
   if (item.kind === "placeholder") {
     return (
       <Image
-        src={`/stickers/placeholder/${item.name}.svg`}
+        src={`/stickers/placeholder/${item.name}.png`}
         alt={item.label}
         width={size}
         height={size}

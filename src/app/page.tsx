@@ -102,7 +102,7 @@ export default function LandingPage() {
             </div>
           </div>
           <Image
-            src="/stickers/placeholder/party.svg"
+            src="/stickers/placeholder/party.png"
             alt=""
             width={90}
             height={90}
@@ -110,7 +110,7 @@ export default function LandingPage() {
             style={{ "--r": "8deg" } as React.CSSProperties}
           />
           <Image
-            src="/stickers/placeholder/hi.svg"
+            src="/stickers/placeholder/hi.png"
             alt=""
             width={86}
             height={86}
@@ -118,7 +118,7 @@ export default function LandingPage() {
             style={{ "--r": "-9deg", animationDelay: ".6s" } as React.CSSProperties}
           />
           <Image
-            src="/stickers/placeholder/thanks.svg"
+            src="/stickers/placeholder/thanks.png"
             alt=""
             width={72}
             height={72}
@@ -179,7 +179,7 @@ export default function LandingPage() {
       >
         <div className="relative h-[300px] overflow-hidden rounded-panel bg-gradient-to-b from-[#E9F0E3] to-[#F7F4ED] md:h-[340px]">
           <Image
-            src="/stickers/placeholder/thumbsup.svg"
+            src="/stickers/placeholder/thumbsup.png"
             alt=""
             width={100}
             height={100}
@@ -187,7 +187,7 @@ export default function LandingPage() {
             style={{ "--r": "-6deg" } as React.CSSProperties}
           />
           <Image
-            src="/stickers/placeholder/laugh.svg"
+            src="/stickers/placeholder/laugh.png"
             alt=""
             width={100}
             height={100}
@@ -195,7 +195,7 @@ export default function LandingPage() {
             style={{ "--r": "7deg", animationDelay: ".5s" } as React.CSSProperties}
           />
           <Image
-            src="/stickers/placeholder/heart-eyes.svg"
+            src="/stickers/placeholder/heart-eyes.png"
             alt=""
             width={72}
             height={72}
@@ -237,9 +237,9 @@ export default function LandingPage() {
       <section className="mx-auto max-w-[760px] px-7 pb-[100px] pt-5 text-center">
         <div className="rounded-panel bg-ink px-8 py-14 text-page">
           <div className="mb-5.5 flex justify-center gap-2.5">
-            <Image src="/stickers/placeholder/party.svg" alt="" width={56} height={56} />
-            <Image src="/stickers/placeholder/heart-eyes.svg" alt="" width={56} height={56} className="rounded-[12px] bg-page" />
-            <Image src="/stickers/placeholder/thanks.svg" alt="" width={56} height={56} />
+            <Image src="/stickers/placeholder/party.png" alt="" width={56} height={56} />
+            <Image src="/stickers/placeholder/heart-eyes.png" alt="" width={56} height={56} className="rounded-[12px] bg-page" />
+            <Image src="/stickers/placeholder/thanks.png" alt="" width={56} height={56} />
           </div>
           <h2 className="font-serif text-[30px] font-normal leading-[1.4]">
             오늘의 감사,
