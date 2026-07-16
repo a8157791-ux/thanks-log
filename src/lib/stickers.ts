@@ -66,8 +66,7 @@ export function stickerSections(favoriteNames: string[]): StickerSection[] {
 
   const sections: StickerSection[] = [];
   if (favorites.length) sections.push({ label: "자주 쓰는", favorite: true, items: favorites });
-  sections.push({ label: "친구들", items: PLACEHOLDER_STICKERS });
-  sections.push({ label: "기본 도형", items: ICON_STICKERS });
+  sections.push({ label: "베어", items: PLACEHOLDER_STICKERS });
   return sections;
 }
 
