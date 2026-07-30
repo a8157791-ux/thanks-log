@@ -634,7 +634,7 @@ export function FridgeScreen({
                 submitAddShopping();
               }}
               placeholder="살 재료 추가"
-              className="w-[84px] border-0 bg-transparent text-[13px] text-ink outline-none placeholder:text-hint"
+              className="chip-input w-[84px] border-0 bg-transparent text-[13px] text-ink outline-none placeholder:text-hint"
             />
             <button
               type="button"
@@ -768,7 +768,7 @@ function ZonePanel({
               onAdd();
             }}
             placeholder="재료 추가"
-            className="w-[76px] border-0 bg-transparent text-[13px] text-ink outline-none placeholder:text-hint"
+            className="chip-input w-[76px] border-0 bg-transparent text-[13px] text-ink outline-none placeholder:text-hint"
           />
           <button
             type="button"
