@@ -24,5 +24,6 @@ export async function toggleHeart(entryId: string) {
     await supabase.from("hearts").insert({ entry_id: entryId, user_id: user.id });
   }
 
+  revalidatePath("/archive");
   revalidatePath("/together");
 }

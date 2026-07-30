@@ -67,6 +67,11 @@ create table public.group_members (
   role        text not null default 'member',                        -- 'owner' | 'member'
   joined_at   timestamptz not null default now()
 );
+
+-- profiles.default_fridge_group_id references groups, so it's added here
+-- (after groups exists) rather than in the profiles table above.
+alter table public.profiles
+  add column default_fridge_group_id uuid references public.groups(id) on delete set null; -- null = 내 냉장고
 create index group_members_user_idx on public.group_members (user_id);
 -- a real (linked) user can only appear once per group; invited-only placeholders (user_id is null) are unrestricted
 create unique index group_members_group_user_uidx on public.group_members (group_id, user_id) where user_id is not null;
@@ -101,6 +106,79 @@ create table public.friends (
   primary key (user_id, friend_name)
 );
 
+-- 6) FRIDGE ITEMS ---------------------------------------------
+-- Personal pantry tracker (냉동실 / 냉장고 / 김치냉장고), or shared
+-- with a '함께' group's members via group_id. Feeds the
+-- menu-recommendation matcher in src/lib/recipes.ts.
+create table public.fridge_items (
+  id          uuid primary key default gen_random_uuid(),
+  user_id     uuid not null references public.profiles(id) on delete cascade,
+  group_id    uuid references public.groups(id) on delete cascade, -- null = 개인 냉장고
+  zone        text not null check (zone in ('freezer', 'fridge', 'kimchi', 'room', 'seasoning')),
+  name        text not null,
+  created_at  timestamptz not null default now()
+);
+create index fridge_items_user_idx on public.fridge_items (user_id, zone, created_at);
+create index fridge_items_group_idx on public.fridge_items (group_id, zone, created_at);
+
+-- 7) SAVED RECIPES ---------------------------------------------
+-- Bookmarked menu recommendations from the fridge matcher.
+create table public.saved_recipes (
+  id          uuid primary key default gen_random_uuid(),
+  user_id     uuid not null references public.profiles(id) on delete cascade,
+  name        text not null,
+  minutes     integer not null default 0,
+  matched     text[] not null default '{}',
+  missing     text[] not null default '{}',
+  link        text not null,
+  created_at  timestamptz not null default now(),
+  unique (user_id, name)
+);
+create index saved_recipes_user_idx on public.saved_recipes (user_id, created_at desc);
+
+-- 8) SHOPPING LIST + MENU IDEAS ---------------------------------
+create table public.shopping_items (
+  id          uuid primary key default gen_random_uuid(),
+  user_id     uuid not null references public.profiles(id) on delete cascade,
+  name        text not null,
+  done        boolean not null default false,
+  created_at  timestamptz not null default now()
+);
+create index shopping_items_user_idx on public.shopping_items (user_id, created_at);
+
+create table public.menu_ideas (
+  id          uuid primary key default gen_random_uuid(),
+  user_id     uuid not null references public.profiles(id) on delete cascade,
+  note        text not null,
+  created_at  timestamptz not null default now()
+);
+create index menu_ideas_user_idx on public.menu_ideas (user_id, created_at desc);
+
+-- 9) PASSED RECIPES ----------------------------------------------
+-- Dismissed menu recommendations, kept so "패스" sticks across reloads.
+create table public.passed_recipes (
+  id          uuid primary key default gen_random_uuid(),
+  user_id     uuid not null references public.profiles(id) on delete cascade,
+  name        text not null,
+  created_at  timestamptz not null default now(),
+  unique (user_id, name)
+);
+create index passed_recipes_user_idx on public.passed_recipes (user_id, created_at desc);
+
+-- 10) SCHEDULE ITEMS ----------------------------------------------
+-- 기록 페이지의 공유 일정. 개인용(group_id null) 또는 특정 그룹
+-- 전용 — fridge_items와 동일한 공유 모델(그룹이 다르면 서로 안 보임).
+create table public.schedule_items (
+  id          uuid primary key default gen_random_uuid(),
+  user_id     uuid not null references public.profiles(id) on delete cascade,
+  group_id    uuid references public.groups(id) on delete cascade,
+  title       text not null,
+  event_date  date not null,
+  created_at  timestamptz not null default now()
+);
+create index schedule_items_user_idx on public.schedule_items (user_id, event_date);
+create index schedule_items_group_idx on public.schedule_items (group_id, event_date);
+
 -- ============================================================
 -- ROW LEVEL SECURITY
 -- ============================================================
@@ -111,6 +189,12 @@ alter table public.group_members  enable row level security;
 alter table public.hearts         enable row level security;
 alter table public.comments       enable row level security;
 alter table public.friends        enable row level security;
+alter table public.fridge_items   enable row level security;
+alter table public.saved_recipes  enable row level security;
+alter table public.shopping_items enable row level security;
+alter table public.menu_ideas     enable row level security;
+alter table public.passed_recipes enable row level security;
+alter table public.schedule_items enable row level security;
 
 -- helper: is the current user a member of a group?
 create function public.is_group_member(gid uuid) returns boolean
@@ -179,6 +263,42 @@ create policy comments_delete on public.comments for delete
 -- FRIENDS: manage own list
 create policy friends_all on public.friends for all
   using (user_id = auth.uid()) with check (user_id = auth.uid());
+
+-- FRIDGE_ITEMS: own pantry, or shared with the linked group's members
+create policy fridge_items_select on public.fridge_items for select
+  using (user_id = auth.uid() or (group_id is not null and public.is_group_member(group_id)));
+create policy fridge_items_insert on public.fridge_items for insert
+  with check (user_id = auth.uid() and (group_id is null or public.is_group_member(group_id)));
+create policy fridge_items_update on public.fridge_items for update
+  using (user_id = auth.uid() or (group_id is not null and public.is_group_member(group_id)));
+create policy fridge_items_delete on public.fridge_items for delete
+  using (user_id = auth.uid() or (group_id is not null and public.is_group_member(group_id)));
+
+-- SAVED_RECIPES: manage own bookmarks
+create policy saved_recipes_all on public.saved_recipes for all
+  using (user_id = auth.uid()) with check (user_id = auth.uid());
+
+-- SHOPPING_ITEMS: manage own list
+create policy shopping_items_all on public.shopping_items for all
+  using (user_id = auth.uid()) with check (user_id = auth.uid());
+
+-- MENU_IDEAS: manage own notes
+create policy menu_ideas_all on public.menu_ideas for all
+  using (user_id = auth.uid()) with check (user_id = auth.uid());
+
+-- PASSED_RECIPES: manage own dismissed list
+create policy passed_recipes_all on public.passed_recipes for all
+  using (user_id = auth.uid()) with check (user_id = auth.uid());
+
+-- SCHEDULE_ITEMS: own events, or shared with the linked group's members
+create policy schedule_items_select on public.schedule_items for select
+  using (user_id = auth.uid() or (group_id is not null and public.is_group_member(group_id)));
+create policy schedule_items_insert on public.schedule_items for insert
+  with check (user_id = auth.uid() and (group_id is null or public.is_group_member(group_id)));
+create policy schedule_items_update on public.schedule_items for update
+  using (user_id = auth.uid() or (group_id is not null and public.is_group_member(group_id)));
+create policy schedule_items_delete on public.schedule_items for delete
+  using (user_id = auth.uid() or (group_id is not null and public.is_group_member(group_id)));
 
 -- ============================================================
 -- STORAGE

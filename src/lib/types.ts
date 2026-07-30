@@ -3,6 +3,7 @@ export type Profile = {
   nickname: string;
   avatar_url: string | null;
   reminder_on: boolean;
+  default_fridge_group_id: string | null;
   created_at: string;
 };
 
@@ -56,6 +57,59 @@ export type Friend = {
   created_at: string;
 };
 
+export type FridgeZone = "freezer" | "fridge" | "kimchi" | "room" | "seasoning";
+
+export type FridgeItem = {
+  id: string;
+  user_id: string;
+  group_id: string | null;
+  zone: FridgeZone;
+  name: string;
+  created_at: string;
+};
+
+export type SavedRecipe = {
+  id: string;
+  user_id: string;
+  name: string;
+  minutes: number;
+  matched: string[];
+  missing: string[];
+  link: string;
+  created_at: string;
+};
+
+export type ShoppingItem = {
+  id: string;
+  user_id: string;
+  name: string;
+  done: boolean;
+  created_at: string;
+};
+
+export type MenuIdea = {
+  id: string;
+  user_id: string;
+  note: string;
+  created_at: string;
+};
+
+export type PassedRecipe = {
+  id: string;
+  user_id: string;
+  name: string;
+  created_at: string;
+};
+
+export type ScheduleItem = {
+  id: string;
+  user_id: string;
+  group_id: string | null;
+  title: string;
+  event_date: string; // YYYY-MM-DD
+  created_at: string;
+};
+
 export type Database = {
   public: {
     Tables: {
@@ -99,6 +153,42 @@ export type Database = {
         Row: Friend;
         Insert: Partial<Friend> & { user_id: string; friend_name: string };
         Update: Partial<Friend>;
+        Relationships: [];
+      };
+      fridge_items: {
+        Row: FridgeItem;
+        Insert: Partial<FridgeItem> & { user_id: string; zone: FridgeZone; name: string };
+        Update: Partial<FridgeItem>;
+        Relationships: [];
+      };
+      saved_recipes: {
+        Row: SavedRecipe;
+        Insert: Partial<SavedRecipe> & { user_id: string; name: string; link: string };
+        Update: Partial<SavedRecipe>;
+        Relationships: [];
+      };
+      shopping_items: {
+        Row: ShoppingItem;
+        Insert: Partial<ShoppingItem> & { user_id: string; name: string };
+        Update: Partial<ShoppingItem>;
+        Relationships: [];
+      };
+      menu_ideas: {
+        Row: MenuIdea;
+        Insert: Partial<MenuIdea> & { user_id: string; note: string };
+        Update: Partial<MenuIdea>;
+        Relationships: [];
+      };
+      passed_recipes: {
+        Row: PassedRecipe;
+        Insert: Partial<PassedRecipe> & { user_id: string; name: string };
+        Update: Partial<PassedRecipe>;
+        Relationships: [];
+      };
+      schedule_items: {
+        Row: ScheduleItem;
+        Insert: Partial<ScheduleItem> & { user_id: string; title: string; event_date: string };
+        Update: Partial<ScheduleItem>;
         Relationships: [];
       };
     };

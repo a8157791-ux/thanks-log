@@ -24,7 +24,9 @@ export type FeedEntry = {
   authorUserId: string;
   authorName: string;
   authorColor: string;
+  entryDate: string; // YYYY-MM-DD
   dateLabel: string;
+  mood: number;
   items: string[];
   photoUrls: string[];
   heartCount: number;

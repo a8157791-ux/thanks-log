@@ -6,6 +6,7 @@ const PROTECTED_PATHS = [
   "/today",
   "/archive",
   "/together",
+  "/fridge",
   "/stats",
   "/settings",
   "/onboarding",

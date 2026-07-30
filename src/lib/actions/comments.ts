@@ -18,6 +18,7 @@ export async function addComment(entryId: string, body: string | null, sticker: 
     .from("comments")
     .insert({ entry_id: entryId, user_id: user.id, body: trimmedBody, sticker });
 
+  revalidatePath("/archive");
   revalidatePath("/together");
 }
 
@@ -29,5 +30,6 @@ export async function deleteComment(commentId: string) {
   if (!user) redirect("/");
 
   await supabase.from("comments").delete().eq("id", commentId).eq("user_id", user.id);
+  revalidatePath("/archive");
   revalidatePath("/together");
 }

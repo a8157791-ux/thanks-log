@@ -29,8 +29,10 @@ export async function createGroup(name: string, icon: string, memberNames: strin
     await addGroupMemberByName(group.id, rawName);
   }
 
+  revalidatePath("/archive");
   revalidatePath("/together");
   revalidatePath("/stats");
+  revalidatePath("/fridge");
 }
 
 /** Adds a member by name: links to a real profile if the name matches a friend who already uses
@@ -73,8 +75,10 @@ export async function addGroupMemberByName(groupId: string, name: string) {
     });
   }
 
+  revalidatePath("/archive");
   revalidatePath("/together");
   revalidatePath("/stats");
+  revalidatePath("/fridge");
 }
 
 /** RLS (groups_update policy) already restricts this to the group's owner_id. */
@@ -90,8 +94,10 @@ export async function updateGroupName(groupId: string, name: string) {
 
   await supabase.from("groups").update({ name: trimmed }).eq("id", groupId);
 
+  revalidatePath("/archive");
   revalidatePath("/together");
   revalidatePath("/stats");
+  revalidatePath("/fridge");
 }
 
 export async function removeGroupMember(groupId: string, userId: string | null, invitedName?: string) {
@@ -105,6 +111,8 @@ export async function removeGroupMember(groupId: string, userId: string | null, 
   query = userId ? query.eq("user_id", userId) : query.eq("invited_name", invitedName ?? "");
   await query;
 
+  revalidatePath("/archive");
   revalidatePath("/together");
   revalidatePath("/stats");
+  revalidatePath("/fridge");
 }

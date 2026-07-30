@@ -14,9 +14,11 @@ import type { FeedEntry } from "./TogetherScreen";
 export function FeedCard({
   entry,
   placeholderStickers,
+  interactive = true,
 }: {
   entry: FeedEntry;
   placeholderStickers: StickerItem[];
+  interactive?: boolean;
 }) {
   const [heartedByMe, setHeartedByMe] = useState(entry.heartedByMe);
   const [heartCount, setHeartCount] = useState(entry.heartCount);
@@ -69,30 +71,32 @@ export function FeedCard({
         ))}
       </ol>
 
-      <div className="mt-4 flex items-center gap-2 border-t border-divider pt-3.5">
-        <button
-          type="button"
-          onClick={onToggleHeart}
-          className="inline-flex items-center gap-1.5 border-0 bg-transparent"
-        >
-          <Heart
-            size={18}
-            weight={heartedByMe ? "fill" : "regular"}
-            color={heartedByMe ? "var(--color-heart)" : "var(--color-hint)"}
-          />
-          <span className="text-[13px] text-muted">{heartCount}</span>
-        </button>
-        <button
-          type="button"
-          onClick={() => setCommentsOpen((v) => !v)}
-          className="inline-flex items-center gap-1.5 border-0 bg-transparent"
-        >
-          <ChatCircle size={17} color="var(--color-hint)" />
-          <span className="text-[13px] text-muted">{entry.comments.length}</span>
-        </button>
-      </div>
+      {interactive && (
+        <div className="mt-4 flex items-center gap-2 border-t border-divider pt-3.5">
+          <button
+            type="button"
+            onClick={onToggleHeart}
+            className="inline-flex items-center gap-1.5 border-0 bg-transparent"
+          >
+            <Heart
+              size={18}
+              weight={heartedByMe ? "fill" : "regular"}
+              color={heartedByMe ? "var(--color-heart)" : "var(--color-hint)"}
+            />
+            <span className="text-[13px] text-muted">{heartCount}</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setCommentsOpen((v) => !v)}
+            className="inline-flex items-center gap-1.5 border-0 bg-transparent"
+          >
+            <ChatCircle size={17} color="var(--color-hint)" />
+            <span className="text-[13px] text-muted">{entry.comments.length}</span>
+          </button>
+        </div>
+      )}
 
-      {commentsOpen && (
+      {interactive && commentsOpen && (
         <div className="mt-3.5 flex animate-fade-up flex-col gap-3.5 border-t border-[#F5F1E9] pt-3.5">
           {entry.comments.length === 0 && (
             <p className="m-0 inline-flex w-full items-center justify-center gap-1 py-1.5 text-center text-[13px] text-hint">

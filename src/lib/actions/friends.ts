@@ -16,6 +16,7 @@ export async function addFriend(name: string) {
 
   await supabase.from("friends").insert({ user_id: user.id, friend_name: trimmed });
   revalidatePath("/settings");
+  revalidatePath("/archive");
   revalidatePath("/together");
 }
 
@@ -32,5 +33,6 @@ export async function removeFriend(friendName: string) {
     .eq("user_id", user.id)
     .eq("friend_name", friendName);
   revalidatePath("/settings");
+  revalidatePath("/archive");
   revalidatePath("/together");
 }

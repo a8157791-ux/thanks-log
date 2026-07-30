@@ -2,7 +2,18 @@
   "permissions": {
     "allow": [
       "Bash(unzip -o \"Gratitude diary web app.zip\" -d ./_unzipped)",
-      "Bash(cd /Users/chunghyeonji/STUDY && ls -la)"
+      "Bash(cd /Users/chunghyeonji/STUDY && ls -la)",
+      "Bash(npx tsc *)",
+      "Bash(npx eslint *)",
+      "Bash(node -p \"JSON.stringify\\(require\\('./package.json'\\).scripts\\)\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3000/)",
+      "Bash(curl -s -o /dev/null -w \"status=%{http_code} redirect=%{redirect_url}\\\\n\" http://localhost:3000/today)",
+      "Bash(curl -s \"http://localhost:3000/?auth_error=1\")",
+      "Bash(curl -s \"http://localhost:3000/\")",
+      "Bash(npm run *)",
+      "Bash(git checkout *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)"
     ]
   }
 }
