@@ -161,7 +161,7 @@ export function SettingsScreen({
               value={friendInput}
               onChange={(e) => setFriendInput(e.target.value)}
               placeholder="이름으로 직접 추가"
-              className="flex-1 rounded-input border border-border-2 bg-card px-3.5 py-2.5 text-sm outline-none"
+              className="min-w-0 flex-1 rounded-input border border-border-2 bg-card px-3.5 py-2.5 text-sm outline-none"
             />
             <button
               type="button"

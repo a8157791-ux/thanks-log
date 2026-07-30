@@ -1,0 +1,49 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
+  <rect x="0" y="0" width="1200" height="630" fill="#FAF8F3"/>
+  <circle cx="1040" cy="70" r="220" fill="#EAF0E4" opacity="0.55"/>
+  <circle cx="50" cy="600" r="170" fill="#F3EDE1" opacity="0.6"/>
+
+  <!-- left: brand -->
+  <rect x="90" y="76" width="330" height="46" rx="23" fill="#F3F0E9"/>
+  <g transform="translate(116 99) scale(0.22) translate(-128 -128)">
+    <path fill="#7d8b6f" d="M223.45,40.07a8,8,0,0,0-7.52-7.52C139.8,28.08,78.82,51,52.82,94a87.09,87.09,0,0,0-12.76,49A101.72,101.72,0,0,0,46.7,175.2a4,4,0,0,0,6.61,1.43l85-86.3a8,8,0,0,1,11.32,11.32L56.74,195.94,42.55,210.13a8.2,8.2,0,0,0-.6,11.1,8,8,0,0,0,11.71.43l16.79-16.79c14.14,6.84,28.41,10.57,42.56,11.07q1.67.06,3.33.06A86.93,86.93,0,0,0,162,203.18C205,177.18,227.93,116.21,223.45,40.07Z"/>
+  </g>
+  <text x="145" y="107" font-family="Noto Sans CJK KR, sans-serif" font-size="19" font-weight="600" fill="#7d8b6f">하루 3분, 마음이 자라는 습관</text>
+
+  <text x="88" y="248" font-family="Noto Serif CJK KR, serif" font-size="90" font-weight="700" fill="#37322C">땡큐로그</text>
+  <text x="90" y="298" font-family="Noto Sans CJK KR, sans-serif" font-size="30" font-weight="500" fill="#6b655b">친구·가족과 함께 쓰는 감사일기</text>
+  <text x="90" y="352" font-family="Noto Sans CJK KR, sans-serif" font-size="23" fill="#8a8378">작은 감사를 기록하고, 사진과 손그림 스티커로</text>
+  <text x="90" y="384" font-family="Noto Sans CJK KR, sans-serif" font-size="23" fill="#8a8378">다정하게 나눠요.</text>
+
+  <!-- right: diary card mock -->
+  <rect x="678" y="152" width="410" height="354" rx="24" fill="#000000" opacity="0.06"/>
+  <rect x="642" y="100" width="470" height="440" rx="32" fill="#EAF0E4"/>
+  <rect x="674" y="142" width="406" height="350" rx="22" fill="#FFFFFF"/>
+
+  <text x="702" y="184" font-family="Noto Sans CJK KR, sans-serif" font-size="16" fill="#B0A896">2026년 7월 15일 수요일</text>
+
+  <text x="702" y="232" font-family="Noto Sans CJK KR, sans-serif" font-size="19">
+    <tspan font-family="Noto Serif CJK KR, serif" fill="#B9B2A5">一</tspan>
+    <tspan dx="12" fill="#37322C">아침 햇살에 눈뜬 조용한 순간</tspan>
+  </text>
+  <text x="702" y="278" font-family="Noto Sans CJK KR, sans-serif" font-size="19">
+    <tspan font-family="Noto Serif CJK KR, serif" fill="#B9B2A5">二</tspan>
+    <tspan dx="12" fill="#37322C">친구가 보내준 다정한 메시지</tspan>
+  </text>
+  <text x="702" y="324" font-family="Noto Sans CJK KR, sans-serif" font-size="19">
+    <tspan font-family="Noto Serif CJK KR, serif" fill="#B9B2A5">三</tspan>
+    <tspan dx="12" fill="#37322C">퇴근길 노을이 유난히 예뻤음</tspan>
+  </text>
+
+  <line x1="702" y1="350" x2="1050" y2="350" stroke="#F0EDE5" stroke-width="1.5"/>
+
+  <g transform="translate(712 373) scale(0.086) translate(-128 -128)">
+    <path fill="#C86B5C" d="M240,102c0,70-103.79,126.66-108.21,129a8,8,0,0,1-7.58,0C119.79,228.66,16,172,16,102A62.07,62.07,0,0,1,78,40c20.65,0,38.73,8.88,50,23.89C139.27,48.88,157.35,40,178,40A62.07,62.07,0,0,1,240,102Z"/>
+  </g>
+  <text x="736" y="380" font-family="Noto Sans CJK KR, sans-serif" font-size="18" fill="#6B655B">4</text>
+
+  <g transform="translate(770 373) scale(0.086) translate(-128 -128)">
+    <path fill="#8e9aaf" d="M232,128A104,104,0,0,1,79.12,219.82L45.07,231.17a16,16,0,0,1-20.24-20.24l11.35-34.05A104,104,0,1,1,232,128Z"/>
+  </g>
+  <text x="794" y="380" font-family="Noto Sans CJK KR, sans-serif" font-size="18" fill="#6B655B">2</text>
+</svg>

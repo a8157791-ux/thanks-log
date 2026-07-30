@@ -78,6 +78,7 @@ export function FridgeScreen({
   const [shoppingDraft, setShoppingDraft] = useState("");
   const [ideas, setIdeas] = useState<MenuIdea[]>(initialIdeas);
   const [ideaDraft, setIdeaDraft] = useState("");
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const shoppingComposingRef = useRef(false);
   const ideaComposingRef = useRef(false);
   const [drafts, setDrafts] = useState<Record<FridgeZone, string>>({
@@ -223,8 +224,9 @@ export function FridgeScreen({
     const name = drafts[zone].trim();
     if (!name) return;
     tempIdRef.current += 1;
+    const tempId = `temp-${tempIdRef.current}`;
     const optimistic: FridgeItem = {
-      id: `temp-${tempIdRef.current}`,
+      id: tempId,
       user_id: "",
       group_id: activeGroupId,
       zone,
@@ -234,7 +236,11 @@ export function FridgeScreen({
     setItems((prev) => [...prev, optimistic]);
     setDrafts((prev) => ({ ...prev, [zone]: "" }));
     startTransition(async () => {
-      await addFridgeItem(zone, name, activeGroupId);
+      const { error } = await addFridgeItem(zone, name, activeGroupId);
+      if (error) {
+        setItems((prev) => prev.filter((i) => i.id !== tempId));
+        setErrorMsg(error);
+      }
     });
   }
 
@@ -242,7 +248,11 @@ export function FridgeScreen({
     setItems((prev) => prev.filter((i) => i.id !== item.id));
     if (item.id.startsWith("temp-")) return;
     startTransition(async () => {
-      await removeFridgeItem(item.id);
+      const { error } = await removeFridgeItem(item.id);
+      if (error) {
+        setItems((prev) => [...prev, item]);
+        setErrorMsg(error);
+      }
     });
   }
 
@@ -283,7 +293,11 @@ export function FridgeScreen({
       setItems((prev) => prev.map((i) => (i.id === itemId ? { ...i, zone: targetZone } : i)));
       if (!itemId.startsWith("temp-")) {
         startTransition(async () => {
-          await moveFridgeItem(itemId, targetZone);
+          const { error } = await moveFridgeItem(itemId, targetZone);
+          if (error) {
+            setItems((prev) => prev.map((i) => (i.id === itemId ? { ...i, zone: fromZone } : i)));
+            setErrorMsg(error);
+          }
         });
       }
     }
@@ -296,6 +310,20 @@ export function FridgeScreen({
         뭐 해먹지?
       </h1>
       <p className="mt-1.5 text-[12.5px] text-hint">재료를 꾹 눌러서 다른 칸으로 옮길 수 있어요.</p>
+
+      {errorMsg && (
+        <div className="mt-3.5 flex items-start justify-between gap-2 rounded-card border border-[#E8B4B4] bg-[#FBEAEA] px-4 py-2.5 text-[12.5px] leading-[1.5] text-[#B23A3A]">
+          <span>저장에 실패했어요: {errorMsg}</span>
+          <button
+            type="button"
+            onClick={() => setErrorMsg(null)}
+            className="shrink-0 border-0 bg-transparent p-0 text-[#B23A3A]"
+            aria-label="에러 메시지 닫기"
+          >
+            <X size={12} weight="bold" />
+          </button>
+        </div>
+      )}
 
       <div className="no-scrollbar mt-4.5 flex items-center gap-2 overflow-x-auto pb-1">
         <Link

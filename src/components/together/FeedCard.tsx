@@ -154,7 +154,7 @@ export function FeedCard({
               onChange={(e) => setDraft(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && submitComment()}
               placeholder="따뜻한 한마디를 남겨요"
-              className="flex-1 rounded-pill border border-border-2 bg-page px-4 py-2.5 text-sm outline-none"
+              className="min-w-0 flex-1 rounded-pill border border-border-2 bg-page px-4 py-2.5 text-sm outline-none"
             />
             <button
               type="button"

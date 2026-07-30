@@ -59,6 +59,7 @@ export function RecordScreen({
   const [scheduleItems, setScheduleItems] = useState<ScheduleItem[]>(schedule);
   const [eventTitle, setEventTitle] = useState("");
   const [eventDate, setEventDate] = useState(todayKey);
+  const [scheduleError, setScheduleError] = useState<string | null>(null);
   const [, startTransition] = useTransition();
   const tempIdRef = useRef(0);
 
@@ -78,8 +79,9 @@ export function RecordScreen({
     const title = eventTitle.trim();
     if (!title || !eventDate) return;
     tempIdRef.current += 1;
+    const tempId = `temp-${tempIdRef.current}`;
     const optimistic: ScheduleItem = {
-      id: `temp-${tempIdRef.current}`,
+      id: tempId,
       user_id: myUserId,
       group_id: activeGroupId,
       title,
@@ -89,7 +91,11 @@ export function RecordScreen({
     setScheduleItems((prev) => [...prev, optimistic]);
     setEventTitle("");
     startTransition(async () => {
-      await addScheduleEvent(title, eventDate, activeGroupId);
+      const { error } = await addScheduleEvent(title, eventDate, activeGroupId);
+      if (error) {
+        setScheduleItems((prev) => prev.filter((s) => s.id !== tempId));
+        setScheduleError(error);
+      }
     });
   }
 
@@ -97,7 +103,11 @@ export function RecordScreen({
     setScheduleItems((prev) => prev.filter((s) => s.id !== item.id));
     if (item.id.startsWith("temp-")) return;
     startTransition(async () => {
-      await removeScheduleEvent(item.id);
+      const { error } = await removeScheduleEvent(item.id);
+      if (error) {
+        setScheduleItems((prev) => [...prev, item]);
+        setScheduleError(error);
+      }
     });
   }
 
@@ -238,33 +248,49 @@ export function RecordScreen({
           {activeGroup ? "이 그룹 멤버들과 같이 보는 일정이에요." : "나만 보는 개인 일정이에요."}
         </p>
 
-        <div className="mt-3.5 flex gap-2">
+        {scheduleError && (
+          <div className="mt-2.5 flex items-start justify-between gap-2 rounded-card border border-[#E8B4B4] bg-[#FBEAEA] px-3.5 py-2 text-[12px] leading-[1.5] text-[#B23A3A]">
+            <span>저장에 실패했어요: {scheduleError}</span>
+            <button
+              type="button"
+              onClick={() => setScheduleError(null)}
+              className="shrink-0 border-0 bg-transparent p-0 text-[#B23A3A]"
+              aria-label="에러 메시지 닫기"
+            >
+              <X size={11} weight="bold" />
+            </button>
+          </div>
+        )}
+
+        <div className="mt-3.5 flex flex-col gap-2">
           <input
             type="date"
             value={eventDate}
             onChange={(e) => setEventDate(e.target.value)}
-            className="rounded-input border border-border-2 bg-page px-3 py-2.5 text-[13px] text-ink outline-none"
+            className="w-full min-w-0 rounded-input border border-border-2 bg-page px-3 py-2.5 text-[13px] text-ink outline-none"
           />
-          <input
-            type="text"
-            value={eventTitle}
-            onChange={(e) => setEventTitle(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key !== "Enter") return;
-              if (e.nativeEvent.isComposing) return;
-              e.preventDefault();
-              submitAddEvent();
-            }}
-            placeholder="무슨 일정이에요?"
-            className="flex-1 rounded-input border border-border-2 bg-page px-3.5 py-2.5 text-[13px] text-ink outline-none"
-          />
-          <button
-            type="button"
-            onClick={submitAddEvent}
-            className="flex-none rounded-input border-0 bg-ink px-4 text-[13px] font-semibold text-page"
-          >
-            추가
-          </button>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={eventTitle}
+              onChange={(e) => setEventTitle(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key !== "Enter") return;
+                if (e.nativeEvent.isComposing) return;
+                e.preventDefault();
+                submitAddEvent();
+              }}
+              placeholder="무슨 일정이에요?"
+              className="min-w-0 flex-1 rounded-input border border-border-2 bg-page px-3.5 py-2.5 text-[13px] text-ink outline-none"
+            />
+            <button
+              type="button"
+              onClick={submitAddEvent}
+              className="flex-none rounded-input border-0 bg-ink px-4 text-[13px] font-semibold text-page"
+            >
+              추가
+            </button>
+          </div>
         </div>
       </div>
 

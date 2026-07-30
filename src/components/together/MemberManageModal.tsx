@@ -55,7 +55,7 @@ export function MemberManageModal({
             value={nameDraft}
             onChange={(e) => setNameDraft(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && saveName()}
-            className="flex-1 rounded-input border border-border-2 bg-card px-3.5 py-2.5 text-[15px] outline-none"
+            className="min-w-0 flex-1 rounded-input border border-border-2 bg-card px-3.5 py-2.5 text-[15px] outline-none"
           />
         </div>
         <div className="mt-4 flex gap-2.5">
@@ -160,7 +160,7 @@ export function MemberManageModal({
           value={memberInput}
           onChange={(e) => setMemberInput(e.target.value)}
           placeholder="멤버 이름"
-          className="flex-1 rounded-input border border-border-2 bg-card px-3.5 py-3 text-[14.5px] outline-none"
+          className="min-w-0 flex-1 rounded-input border border-border-2 bg-card px-3.5 py-3 text-[14.5px] outline-none"
         />
         <button
           type="button"
