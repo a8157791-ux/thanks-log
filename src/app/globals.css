@@ -70,6 +70,8 @@ button {
   font-family: inherit;
 }
 
+.rounded-input{width:auto }
+
 p,
 .text-wrap-pretty {
   text-wrap: pretty;
