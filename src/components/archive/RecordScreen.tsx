@@ -8,6 +8,7 @@ import {
   CaretLeft,
   CaretRight,
   ListBullets,
+  Star,
   UserPlus,
   X,
 } from "@phosphor-icons/react/dist/ssr";
@@ -21,6 +22,7 @@ import { GroupCreateModal } from "@/components/together/GroupCreateModal";
 import { MemberManageModal } from "@/components/together/MemberManageModal";
 import { GroupIcon } from "@/lib/group-icons";
 import { addScheduleEvent, removeScheduleEvent } from "@/lib/actions/schedule";
+import { setDefaultRecord } from "@/lib/actions/profile";
 import type { FeedEntry, GroupSummary, MemberInfo } from "@/components/together/TogetherScreen";
 import type { StickerItem } from "@/lib/stickers";
 import type { ScheduleItem } from "@/lib/types";
@@ -30,6 +32,7 @@ type ViewMode = "calendar" | "feed";
 export function RecordScreen({
   groups,
   activeGroup,
+  defaultGroupId,
   members,
   view,
   feed,
@@ -41,6 +44,7 @@ export function RecordScreen({
 }: {
   groups: GroupSummary[];
   activeGroup: GroupSummary | null;
+  defaultGroupId: string | null;
   members: MemberInfo[];
   view: ViewMode;
   feed: FeedEntry[];
@@ -55,6 +59,8 @@ export function RecordScreen({
   const [createOpen, setCreateOpen] = useState(false);
   const [memberModalOpen, setMemberModalOpen] = useState(false);
   const [detailKey, setDetailKey] = useState<string | null>(null);
+  const [myDefault, setMyDefault] = useState<string | null>(defaultGroupId);
+  const [, startDefaultTransition] = useTransition();
 
   const [scheduleItems, setScheduleItems] = useState<ScheduleItem[]>(schedule);
   const [eventTitle, setEventTitle] = useState("");
@@ -64,6 +70,13 @@ export function RecordScreen({
   const tempIdRef = useRef(0);
 
   const activeGroupId = activeGroup?.id ?? null;
+
+  function handleSetDefault() {
+    setMyDefault(activeGroupId);
+    startDefaultTransition(async () => {
+      await setDefaultRecord(activeGroupId);
+    });
+  }
 
   const eventsByDate = useMemo(() => {
     const map = new Map<string, ScheduleItem[]>();
@@ -209,6 +222,24 @@ export function RecordScreen({
             피드
           </Link>
         </div>
+      </div>
+
+      <div className="mt-1.5 flex items-center justify-end">
+        {myDefault === activeGroupId ? (
+          <span className="inline-flex shrink-0 items-center gap-1 text-[12px] text-hint">
+            <Star size={12} weight="fill" color="var(--color-accent-4)" />
+            기본으로 열림
+          </span>
+        ) : (
+          <button
+            type="button"
+            onClick={handleSetDefault}
+            className="inline-flex shrink-0 items-center gap-1 border-0 bg-transparent p-0 text-[12px] text-faint"
+          >
+            <Star size={12} weight="regular" />
+            기본으로 설정
+          </button>
+        )}
       </div>
 
       {activeGroup && (

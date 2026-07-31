@@ -115,7 +115,7 @@ export function MemberManageModal({
             >
               {m.name.slice(0, 1)}
             </span>
-            <span className="flex-1 text-sm text-ink">
+            <span className="match-input-text flex-1 text-sm text-ink">
               {m.name} {m.isMe && "(나)"}
               {!m.linked && <span className="ml-1.5 text-[12px] text-hint">· 초대 대기중</span>}
             </span>
@@ -145,7 +145,7 @@ export function MemberManageModal({
                   key={f}
                   type="button"
                   onClick={() => startTransition(() => addGroupMemberByName(groupId, f))}
-                  className="rounded-pill border border-border-2 bg-card px-3.5 py-2 text-[13px] text-muted"
+                  className="match-input-text rounded-pill border border-border-2 bg-card px-3.5 py-2 text-[13px] text-muted"
                 >
                   {f}
                 </button>

@@ -22,7 +22,7 @@ export default async function ArchivePage({
   const [{ data: memberRows }, { data: friendRows }, { data: profile }] = await Promise.all([
     supabase.from("group_members").select("group_id").eq("user_id", user.id),
     supabase.from("friends").select("friend_name").eq("user_id", user.id),
-    supabase.from("profiles").select("nickname").eq("id", user.id).single(),
+    supabase.from("profiles").select("nickname, default_record_group_id").eq("id", user.id).single(),
   ]);
   const myGroupIds = (memberRows ?? []).map((m) => m.group_id);
   const friendNames = (friendRows ?? []).map((f) => f.friend_name);
@@ -33,8 +33,20 @@ export default async function ArchivePage({
     : { data: [] as GroupSummary[] };
   const groups = groupRows ?? [];
 
-  const requestedGroupId = g && g !== "personal" ? g : undefined;
-  const isGroupSelected = Boolean(requestedGroupId && groups.some((gr) => gr.id === requestedGroupId));
+  const rawDefault = profile?.default_record_group_id ?? null;
+  const defaultGroupId = rawDefault && groups.some((gr) => gr.id === rawDefault) ? rawDefault : null;
+
+  // ?g=personal → explicitly personal. ?g=<id> → that group (if a member).
+  // No ?g at all → fall back to the saved default record group (or personal).
+  const requestedGroupId =
+    g === "personal"
+      ? undefined
+      : g && groups.some((gr) => gr.id === g)
+        ? g
+        : g
+          ? undefined
+          : (defaultGroupId ?? undefined);
+  const isGroupSelected = Boolean(requestedGroupId);
 
   let activeGroup: GroupSummary | null = null;
   let members: MemberInfo[] = [];
@@ -160,6 +172,7 @@ export default async function ArchivePage({
       key={(activeGroup?.id ?? "personal") + view}
       groups={groups}
       activeGroup={activeGroup}
+      defaultGroupId={defaultGroupId}
       members={members}
       view={view}
       feed={feed}

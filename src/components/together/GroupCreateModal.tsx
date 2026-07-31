@@ -108,7 +108,7 @@ export function GroupCreateModal({
             {selectedFriends.map((f) => (
               <span
                 key={f}
-                className="inline-flex items-center gap-2 rounded-pill px-3.5 py-2 text-[13px] text-white"
+                className="match-input-text inline-flex items-center gap-2 rounded-pill px-3.5 py-2 text-[13px] text-white"
                 style={{ background: "var(--color-accent)" }}
               >
                 {f}
@@ -134,7 +134,7 @@ export function GroupCreateModal({
                       key={f}
                       type="button"
                       onClick={() => setSelectedFriends((prev) => [...prev, f])}
-                      className="rounded-pill border border-border-2 bg-card px-3.5 py-2 text-[13px] text-muted"
+                      className="match-input-text rounded-pill border border-border-2 bg-card px-3.5 py-2 text-[13px] text-muted"
                     >
                       {f}
                     </button>

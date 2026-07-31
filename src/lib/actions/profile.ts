@@ -64,6 +64,18 @@ export async function setDefaultFridge(groupId: string | null) {
   revalidatePath("/fridge");
 }
 
+/** 기록 페이지를 열었을 때 가장 먼저 보여줄 곳. null = 내 기록(개인). */
+export async function setDefaultRecord(groupId: string | null) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/");
+
+  await supabase.from("profiles").update({ default_record_group_id: groupId }).eq("id", user.id);
+  revalidatePath("/archive");
+}
+
 /** 모든 데이터 초기화: entries/comments/hearts 등 본인 소유 데이터를 지운다 (그룹 멤버십은 유지). */
 export async function resetMyData() {
   const supabase = await createClient();

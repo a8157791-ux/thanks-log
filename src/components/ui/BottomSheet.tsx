@@ -1,6 +1,18 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { createPortal } from "react-dom";
+
+// Screen components wrap their content in an `.animate-fade-up` div, and any
+// ancestor with a CSS animation/transform on it becomes the containing block
+// for `position: fixed` descendants in most mobile browsers — so a modal
+// rendered inline ends up pinned to that ancestor's (tall, scrollable) box
+// instead of the actual viewport. A portal to <body> sidesteps that
+// entirely, regardless of what's animating up the tree.
+//
+// No mount-detection dance needed here: `open` only ever flips true from a
+// client-side event handler (never on the initial/SSR render), so by the
+// time we'd try to portal, `document` is already guaranteed to exist.
 
 export function BottomSheet({
   open,
@@ -11,8 +23,8 @@ export function BottomSheet({
   onClose: () => void;
   children: ReactNode;
 }) {
-  if (!open) return null;
-  return (
+  if (!open || typeof document === "undefined") return null;
+  return createPortal(
     <div
       onClick={onClose}
       className="fixed inset-0 z-[80] flex items-end justify-center bg-[rgba(55,50,44,.35)] animate-fade-in"
@@ -24,7 +36,8 @@ export function BottomSheet({
         <div className="mx-auto mb-5 h-[4px] w-[38px] rounded-pill bg-[#DDD7CB]" />
         {children}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
@@ -37,8 +50,8 @@ export function CenterModal({
   onClose: () => void;
   children: ReactNode;
 }) {
-  if (!open) return null;
-  return (
+  if (!open || typeof document === "undefined") return null;
+  return createPortal(
     <div
       onClick={onClose}
       className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(55,50,44,.35)] p-6 animate-fade-in"
@@ -49,6 +62,7 @@ export function CenterModal({
       >
         {children}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

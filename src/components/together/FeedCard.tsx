@@ -114,7 +114,9 @@ export function FeedCard({
               </span>
               <div className="flex-1">
                 <p className="m-0 text-[12.5px] font-semibold text-ink">{c.authorName}</p>
-                {c.body && <p className="mt-0.5 text-sm leading-[1.5] text-[#4A443C]">{c.body}</p>}
+                {c.body && (
+                  <p className="match-input-text mt-0.5 text-sm leading-[1.5] text-[#4A443C]">{c.body}</p>
+                )}
                 {c.sticker && (
                   <div className="mt-1">
                     <StickerByName full={c.sticker} size={54} />

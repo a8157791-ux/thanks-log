@@ -4,6 +4,7 @@ export type Profile = {
   avatar_url: string | null;
   reminder_on: boolean;
   default_fridge_group_id: string | null;
+  default_record_group_id: string | null;
   created_at: string;
 };
 

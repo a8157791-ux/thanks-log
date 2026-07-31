@@ -39,6 +39,11 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: "#7d8b6f",
+  // 앱처럼 쓰는 화면이라 핀치/더블탭/포커스 확대를 아예 막는다. 입력창 폰트
+  // 크기와 무관하게 확대를 원천 차단하는 가장 확실한 방법 — globals.css의
+  // 16px 폰트 트릭은 이제 이 설정의 보조 장치일 뿐이다.
+  maximumScale: 1,
+  userScalable: false,
 };
 
 export default function RootLayout({

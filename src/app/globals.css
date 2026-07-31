@@ -70,16 +70,27 @@ button {
   font-family: inherit;
 }
 
-.rounded-input{width:auto }
-
 /* iOS Safari zooms the page when a focused input's font-size is under 16px.
    Force 16px on mobile widths only, so desktop keeps its designed sizes.
-   .chip-input opts out (small pill/badge inputs whose design depends on
-   matching the surrounding badge font size). */
+   .chip-input (냉장고/장보기의 좁은 태그형 입력창) used to opt out to keep its
+   font matching the surrounding pill chips, but that meant it still triggered
+   the zoom-on-focus — worse than a slightly bigger font in a narrow box, so it
+   now gets the same treatment plus a bit of breathing room to type in. */
 @media (max-width: 767px) {
-  input:not(.chip-input),
+  input,
   textarea,
   select {
+    font-size: 16px !important;
+  }
+
+  .chip-input {
+    min-width: 108px;
+  }
+
+  /* Content rendered right next to one of the inputs above (a chip, a list
+     row, a comment) — bumped to the same 16px so typing → registered isn't
+     a visible size jump, now that the input itself is forced to 16px. */
+  .match-input-text {
     font-size: 16px !important;
   }
 }

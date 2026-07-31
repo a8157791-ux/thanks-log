@@ -178,7 +178,7 @@ export function SettingsScreen({
             >
               {f.name.slice(0, 1)}
             </span>
-            <span className="flex-1 text-sm text-ink">{f.name}</span>
+            <span className="match-input-text flex-1 text-sm text-ink">{f.name}</span>
             <button
               type="button"
               onClick={() => startTransition(() => removeFriend(f.name))}

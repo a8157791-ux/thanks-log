@@ -51,6 +51,15 @@ const RECIPE_SITES = [
 
 type DragState = { itemId: string; fromZone: FridgeZone; label: string; x: number; y: number };
 
+function shuffle<T>(arr: T[]): T[] {
+  const result = [...arr];
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+}
+
 export function FridgeScreen({
   initialItems,
   initialSaved,
@@ -98,22 +107,37 @@ export function FridgeScreen({
 
   const allNames = useMemo(() => items.map((i) => i.name), [items]);
   const savedNames = useMemo(() => new Set(saved.map((r) => r.name)), [saved]);
+  // 재료가 그대로면 추천도 항상 똑같이 나왔던 문제 — 상위 후보군(최대 8개) 안에서만
+  // 매번 랜덤하게 4개를 뽑아, 관련성은 유지하면서 새로고침할 때마다 조합이 바뀌게 함.
   const recommendations = useMemo(() => {
-    const pool = recommendRecipes(allNames, 20);
-    return pool.filter((r) => !passedNames.has(r.name)).slice(0, 4);
+    const pool = recommendRecipes(allNames, 20).filter((r) => !passedNames.has(r.name));
+    return shuffle(pool.slice(0, 8)).slice(0, 4);
   }, [allNames, passedNames]);
 
   function handlePass(name: string) {
     setPassedNames((prev) => new Set(prev).add(name));
     startTransition(async () => {
-      await passRecipe(name);
+      const { error } = await passRecipe(name);
+      if (error) {
+        setPassedNames((prev) => {
+          const next = new Set(prev);
+          next.delete(name);
+          return next;
+        });
+        setErrorMsg(error);
+      }
     });
   }
 
   function handleResetPassed() {
+    const previous = passedNames;
     setPassedNames(new Set());
     startTransition(async () => {
-      await unpassAllRecipes();
+      const { error } = await unpassAllRecipes();
+      if (error) {
+        setPassedNames(previous);
+        setErrorMsg(error);
+      }
     });
   }
 
@@ -126,10 +150,7 @@ export function FridgeScreen({
 
   function handleToggleSave(recipe: RecipeMatch) {
     if (savedNames.has(recipe.name)) {
-      setSaved((prev) => prev.filter((r) => r.name !== recipe.name));
-      startTransition(async () => {
-        await unsaveRecipe(recipe.name);
-      });
+      handleUnsave(recipe.name);
       return;
     }
     const optimistic: SavedRecipe = {
@@ -144,20 +165,29 @@ export function FridgeScreen({
     };
     setSaved((prev) => [optimistic, ...prev]);
     startTransition(async () => {
-      await saveRecipe({
+      const { error } = await saveRecipe({
         name: recipe.name,
         minutes: recipe.minutes,
         matched: recipe.matched,
         missing: recipe.missing,
         link: recipe.link,
       });
+      if (error) {
+        setSaved((prev) => prev.filter((r) => r.name !== recipe.name));
+        setErrorMsg(error);
+      }
     });
   }
 
   function handleUnsave(name: string) {
+    const previous = saved;
     setSaved((prev) => prev.filter((r) => r.name !== name));
     startTransition(async () => {
-      await unsaveRecipe(name);
+      const { error } = await unsaveRecipe(name);
+      if (error) {
+        setSaved(previous);
+        setErrorMsg(error);
+      }
     });
   }
 
@@ -175,7 +205,11 @@ export function FridgeScreen({
     setShopping((prev) => [...prev, optimistic]);
     setShoppingDraft("");
     startTransition(async () => {
-      await addShoppingItem(name);
+      const { error } = await addShoppingItem(name);
+      if (error) {
+        setShopping((prev) => prev.filter((s) => s.id !== optimistic.id));
+        setErrorMsg(error);
+      }
     });
   }
 
@@ -183,7 +217,11 @@ export function FridgeScreen({
     setShopping((prev) => prev.map((s) => (s.id === item.id ? { ...s, done: !s.done } : s)));
     if (item.id.startsWith("temp-")) return;
     startTransition(async () => {
-      await toggleShoppingItem(item.id, !item.done);
+      const { error } = await toggleShoppingItem(item.id, !item.done);
+      if (error) {
+        setShopping((prev) => prev.map((s) => (s.id === item.id ? { ...s, done: item.done } : s)));
+        setErrorMsg(error);
+      }
     });
   }
 
@@ -191,7 +229,11 @@ export function FridgeScreen({
     setShopping((prev) => prev.filter((s) => s.id !== item.id));
     if (item.id.startsWith("temp-")) return;
     startTransition(async () => {
-      await removeShoppingItem(item.id);
+      const { error } = await removeShoppingItem(item.id);
+      if (error) {
+        setShopping((prev) => [...prev, item]);
+        setErrorMsg(error);
+      }
     });
   }
 
@@ -208,7 +250,11 @@ export function FridgeScreen({
     setIdeas((prev) => [optimistic, ...prev]);
     setIdeaDraft("");
     startTransition(async () => {
-      await addMenuIdea(note);
+      const { error } = await addMenuIdea(note);
+      if (error) {
+        setIdeas((prev) => prev.filter((i) => i.id !== optimistic.id));
+        setErrorMsg(error);
+      }
     });
   }
 
@@ -216,7 +262,11 @@ export function FridgeScreen({
     setIdeas((prev) => prev.filter((i) => i.id !== idea.id));
     if (idea.id.startsWith("temp-")) return;
     startTransition(async () => {
-      await removeMenuIdea(idea.id);
+      const { error } = await removeMenuIdea(idea.id);
+      if (error) {
+        setIdeas((prev) => [...prev, idea]);
+        setErrorMsg(error);
+      }
     });
   }
 
@@ -536,7 +586,7 @@ export function FridgeScreen({
                   : "flex items-start gap-2.5 border-t border-divider py-2.5"
               }
             >
-              <span className="flex-1 text-[13.5px] leading-[1.6] text-ink text-wrap-pretty">
+              <span className="match-input-text flex-1 text-[13.5px] leading-[1.6] text-ink text-wrap-pretty">
                 {idea.note}
               </span>
               <button
@@ -591,7 +641,7 @@ export function FridgeScreen({
           {shopping.map((item) => (
             <span
               key={item.id}
-              className="inline-flex items-center gap-1.5 rounded-pill border border-border bg-card px-3 py-1.5 text-[13px]"
+              className="match-input-text inline-flex items-center gap-1.5 rounded-pill border border-border bg-card px-3 py-1.5 text-[13px]"
               style={{
                 color: item.done ? "var(--color-hint)" : "var(--color-ink)",
                 textDecoration: item.done ? "line-through" : "none",
@@ -731,7 +781,7 @@ function ZonePanel({
             onPointerMove={onChipPointerMove}
             onPointerUp={onChipPointerUp}
             onPointerCancel={onChipPointerUp}
-            className="inline-flex cursor-grab items-center gap-1.5 rounded-pill border border-border bg-card px-3 py-1.5 text-[13px] text-ink active:cursor-grabbing"
+            className="match-input-text inline-flex cursor-grab items-center gap-1.5 rounded-pill border border-border bg-card px-3 py-1.5 text-[13px] text-ink active:cursor-grabbing"
             style={{
               touchAction: "none",
               opacity: draggingItemId === item.id ? 0.35 : 1,

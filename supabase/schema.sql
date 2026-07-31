@@ -72,6 +72,8 @@ create table public.group_members (
 -- (after groups exists) rather than in the profiles table above.
 alter table public.profiles
   add column default_fridge_group_id uuid references public.groups(id) on delete set null; -- null = 내 냉장고
+alter table public.profiles
+  add column default_record_group_id uuid references public.groups(id) on delete set null; -- null = 내 기록
 create index group_members_user_idx on public.group_members (user_id);
 -- a real (linked) user can only appear once per group; invited-only placeholders (user_id is null) are unrestricted
 create unique index group_members_group_user_uidx on public.group_members (group_id, user_id) where user_id is not null;
