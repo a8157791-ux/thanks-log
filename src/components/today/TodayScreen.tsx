@@ -212,7 +212,7 @@ function Header({ greeting, todayLabel }: { greeting: string; todayLabel: string
   return (
     <>
       <p className="m-0 text-[13px] tracking-[0.04em] text-faint">{todayLabel}</p>
-      <h1 className="mt-2.5 font-serif text-[26px] font-normal leading-[1.45] text-ink">
+      <h1 className="mt-2.5 font-serif text-[22px] font-normal leading-[1.45] text-ink">
         {greeting}
         <br />
         오늘의 감사 세 가지를 남겨보세요.
