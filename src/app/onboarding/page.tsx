@@ -2,12 +2,19 @@ import { redirect } from "next/navigation";
 import { OnboardingForm } from "@/components/auth/OnboardingForm";
 import { createClient } from "@/lib/supabase/server";
 
-export default async function OnboardingPage() {
+export default async function OnboardingPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ next?: string }>;
+}) {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/");
+
+  const { next: rawNext } = await searchParams;
+  const next = rawNext?.startsWith("/") ? rawNext : null;
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -15,7 +22,7 @@ export default async function OnboardingPage() {
     .eq("id", user.id)
     .single();
 
-  if (profile?.nickname) redirect("/today");
+  if (profile?.nickname) redirect(next ?? "/today");
 
   const prefilled =
     (user.user_metadata?.name as string | undefined) ??
@@ -31,7 +38,7 @@ export default async function OnboardingPage() {
         <h1 className="font-serif text-[24px] font-normal leading-relaxed text-ink">
           어떻게 불러드릴까요?
         </h1>
-        <OnboardingForm prefilled={prefilled} />
+        <OnboardingForm prefilled={prefilled} next={next} />
       </div>
     </div>
   );

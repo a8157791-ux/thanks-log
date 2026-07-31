@@ -106,6 +106,22 @@ create table public.friends (
   primary key (user_id, friend_name)
 );
 
+-- 5b) FRIEND INVITES ------------------------------------------
+-- 1회용 초대 링크. 설정 화면에서 만들어 공유하면, 상대가 열어 로그인 후
+-- 수락할 때 accept_friend_invite()가 양쪽을 진짜 friends 행으로 연결한다.
+create table public.friend_invites (
+  id            uuid primary key default gen_random_uuid(),
+  inviter_id    uuid not null references public.profiles(id) on delete cascade,
+  inviter_name  text not null,               -- 생성 시점 닉네임 스냅샷 (수락 전 미리보기용)
+  token         text not null unique,
+  status        text not null default 'pending', -- 'pending' | 'accepted' | 'revoked'
+  accepted_by   uuid references public.profiles(id) on delete set null,
+  accepted_at   timestamptz,
+  created_at    timestamptz not null default now(),
+  expires_at    timestamptz not null default (now() + interval '14 days')
+);
+create index friend_invites_inviter_idx on public.friend_invites (inviter_id, created_at desc);
+
 -- 6) FRIDGE ITEMS ---------------------------------------------
 -- Personal pantry tracker (냉동실 / 냉장고 / 김치냉장고), or shared
 -- with a '함께' group's members via group_id. Feeds the
@@ -189,6 +205,7 @@ alter table public.group_members  enable row level security;
 alter table public.hearts         enable row level security;
 alter table public.comments       enable row level security;
 alter table public.friends        enable row level security;
+alter table public.friend_invites enable row level security;
 alter table public.fridge_items   enable row level security;
 alter table public.saved_recipes  enable row level security;
 alter table public.shopping_items enable row level security;
@@ -263,6 +280,74 @@ create policy comments_delete on public.comments for delete
 -- FRIENDS: manage own list
 create policy friends_all on public.friends for all
   using (user_id = auth.uid()) with check (user_id = auth.uid());
+
+-- FRIEND_INVITES: signed-out visitors can preview a pending/unexpired invite by
+-- token; the inviter can also see/manage their own regardless of status.
+create policy friend_invites_select on public.friend_invites for select
+  using ((status = 'pending' and expires_at > now()) or inviter_id = auth.uid());
+create policy friend_invites_insert on public.friend_invites for insert
+  with check (inviter_id = auth.uid());
+create policy friend_invites_update on public.friend_invites for update
+  using (inviter_id = auth.uid());
+
+-- Preview an invite by token (works signed-out). security definer so it doesn't
+-- need to touch profiles under RLS — inviter_name is a snapshot on the row.
+create function public.get_invite_preview(p_token text)
+returns table(inviter_id uuid, inviter_name text, status text)
+language sql security definer stable set search_path = public as $$
+  select inviter_id, inviter_name, status
+  from public.friend_invites
+  where token = p_token and expires_at > now();
+$$;
+
+-- Accept an invite: links both sides as real friends and marks it used.
+-- security definer because the invitee must also write a friends row owned by
+-- the inviter, which the invitee's own RLS (friends_all) would otherwise block;
+-- all validity checks happen inside the function itself.
+create function public.accept_friend_invite(p_token text)
+returns text
+language plpgsql security definer set search_path = public as $$
+declare
+  v_invite public.friend_invites%rowtype;
+  v_me uuid := auth.uid();
+  v_my_name text;
+begin
+  if v_me is null then
+    raise exception 'not_authenticated';
+  end if;
+
+  select * into v_invite from public.friend_invites
+  where token = p_token and status = 'pending' and expires_at > now()
+  for update;
+
+  if not found then
+    raise exception 'invite_invalid';
+  end if;
+
+  if v_invite.inviter_id = v_me then
+    raise exception 'invite_self';
+  end if;
+
+  select nickname into v_my_name from public.profiles where id = v_me;
+  v_my_name := coalesce(nullif(v_my_name, ''), '친구');
+
+  insert into public.friends (user_id, friend_id, friend_name)
+  values (v_invite.inviter_id, v_me, v_my_name)
+  on conflict (user_id, friend_name) do update set friend_id = excluded.friend_id;
+
+  insert into public.friends (user_id, friend_id, friend_name)
+  values (v_me, v_invite.inviter_id, v_invite.inviter_name)
+  on conflict (user_id, friend_name) do update set friend_id = excluded.friend_id;
+
+  update public.friend_invites
+  set status = 'accepted', accepted_by = v_me, accepted_at = now()
+  where id = v_invite.id;
+
+  return v_invite.inviter_name;
+end; $$;
+
+grant execute on function public.get_invite_preview(text) to anon, authenticated;
+grant execute on function public.accept_friend_invite(text) to authenticated;
 
 -- FRIDGE_ITEMS: own pantry, or shared with the linked group's members
 create policy fridge_items_select on public.fridge_items for select

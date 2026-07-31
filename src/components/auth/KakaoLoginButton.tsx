@@ -5,7 +5,14 @@ import { useState } from "react";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createClient } from "@/lib/supabase/client";
 
-export function KakaoLoginButton({ className }: { className?: string }) {
+export function KakaoLoginButton({
+  className,
+  next,
+}: {
+  className?: string;
+  /** Path to return to after login (e.g. an invite link). Must start with "/". */
+  next?: string;
+}) {
   const [pending, setPending] = useState(false);
 
   async function login() {
@@ -15,10 +22,12 @@ export function KakaoLoginButton({ className }: { className?: string }) {
     }
     setPending(true);
     const supabase = createClient();
+    const callbackUrl = new URL("/auth/callback", window.location.origin);
+    if (next?.startsWith("/")) callbackUrl.searchParams.set("next", next);
     await supabase.auth.signInWithOAuth({
       provider: "kakao",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: callbackUrl.toString(),
         scopes: "profile_nickname profile_image",
         // Supabase's gotrue always prepends its own default scope (account_email) to
         // whatever `scopes` is set above, which trips KOE205 when the Kakao app hasn't

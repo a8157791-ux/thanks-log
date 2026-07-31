@@ -8,7 +8,8 @@ import {
   updateAvatar,
   updateNickname,
 } from "@/lib/actions/profile";
-import { addFriend, removeFriend } from "@/lib/actions/friends";
+import { addFriend, createFriendInvite, removeFriend } from "@/lib/actions/friends";
+import { shareInviteLink } from "@/lib/kakao/share";
 import { uploadPhotoFile } from "@/lib/storage-client";
 
 export type FriendRow = { name: string; color: string };
@@ -31,6 +32,31 @@ export function SettingsScreen({
   const [reminderOn, setReminderOn] = useState(initialReminderOn);
   const [friendInput, setFriendInput] = useState("");
   const [, startTransition] = useTransition();
+  const [sharePending, setSharePending] = useState(false);
+  const [shareFeedback, setShareFeedback] = useState<string | null>(null);
+
+  async function onShareInvite() {
+    setSharePending(true);
+    setShareFeedback(null);
+    try {
+      const { token, error } = await createFriendInvite();
+      if (error || !token) {
+        setShareFeedback("초대 링크를 만들지 못했어요. 다시 시도해주세요.");
+        return;
+      }
+      const url = `${window.location.origin}/invite/${token}`;
+      const method = await shareInviteLink(url, nickname.trim() || "친구");
+      setShareFeedback(
+        method === "kakao"
+          ? "카카오톡 공유창을 열었어요."
+          : method === "webshare"
+            ? "공유창을 열었어요."
+            : "링크를 복사했어요. 카카오톡에 붙여넣어 보내주세요.",
+      );
+    } finally {
+      setSharePending(false);
+    }
+  }
 
   async function onAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -114,18 +140,25 @@ export function SettingsScreen({
           <span className="text-[12px] font-semibold text-accent">동기화됨</span>
         </div>
 
-        <div className="flex items-center justify-between px-5.5 py-5">
-          <div>
-            <p className="m-0 text-sm">카카오톡으로 공유</p>
-            <p className="mt-1 text-[12px] text-hint">친구에게 감사일기를 보내요</p>
+        <div className="flex flex-col gap-2.5 px-5.5 py-5">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="m-0 text-sm">카카오톡으로 친구 초대</p>
+              <p className="mt-1 text-[12px] text-hint">
+                링크를 보내고 상대가 수락하면 진짜 친구로 연결돼요
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={onShareInvite}
+              disabled={sharePending}
+              className="inline-flex items-center gap-1.5 rounded-btn border-0 bg-kakao px-3.5 py-2.5 text-[13px] font-bold text-kakao-ink disabled:opacity-70"
+            >
+              <ChatCircleDots size={15} weight="fill" />
+              {sharePending ? "준비 중..." : "카카오톡"}
+            </button>
           </div>
-          <button
-            type="button"
-            className="inline-flex items-center gap-1.5 rounded-btn border-0 bg-kakao px-3.5 py-2.5 text-[13px] font-bold text-kakao-ink"
-          >
-            <ChatCircleDots size={15} weight="fill" />
-            카카오톡
-          </button>
+          {shareFeedback && <p className="m-0 text-[12px] text-accent">{shareFeedback}</p>}
         </div>
       </div>
 
@@ -175,6 +208,10 @@ export function SettingsScreen({
               추가
             </button>
           </div>
+          <p className="m-0 text-[11.5px] leading-[1.5] text-hint">
+            아직 땡큐로그를 안 쓰는 친구는 이름만 기록돼요. 실제로 연결하려면 위
+            &ldquo;카카오톡으로 친구 초대&rdquo;를 이용해주세요.
+          </p>
         </div>
       </div>
 

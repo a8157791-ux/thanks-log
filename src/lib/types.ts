@@ -57,6 +57,18 @@ export type Friend = {
   created_at: string;
 };
 
+export type FriendInvite = {
+  id: string;
+  inviter_id: string;
+  inviter_name: string;
+  token: string;
+  status: "pending" | "accepted" | "revoked";
+  accepted_by: string | null;
+  accepted_at: string | null;
+  created_at: string;
+  expires_at: string;
+};
+
 export type FridgeZone = "freezer" | "fridge" | "kimchi" | "room" | "seasoning";
 
 export type FridgeItem = {
@@ -155,6 +167,12 @@ export type Database = {
         Update: Partial<Friend>;
         Relationships: [];
       };
+      friend_invites: {
+        Row: FriendInvite;
+        Insert: Partial<FriendInvite> & { inviter_id: string; inviter_name: string; token: string };
+        Update: Partial<FriendInvite>;
+        Relationships: [];
+      };
       fridge_items: {
         Row: FridgeItem;
         Insert: Partial<FridgeItem> & { user_id: string; zone: FridgeZone; name: string };
@@ -193,6 +211,15 @@ export type Database = {
       };
     };
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Functions: {
+      get_invite_preview: {
+        Args: { p_token: string };
+        Returns: { inviter_id: string; inviter_name: string; status: string }[];
+      };
+      accept_friend_invite: {
+        Args: { p_token: string };
+        Returns: string;
+      };
+    };
   };
 };

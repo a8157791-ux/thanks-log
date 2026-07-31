@@ -3,12 +3,18 @@
 import { useState, useTransition } from "react";
 import { completeOnboarding } from "@/lib/actions/profile";
 
-export function OnboardingForm({ prefilled }: { prefilled: string }) {
+export function OnboardingForm({
+  prefilled,
+  next,
+}: {
+  prefilled: string;
+  next?: string | null;
+}) {
   const [name, setName] = useState(prefilled);
   const [pending, startTransition] = useTransition();
 
   function submit() {
-    startTransition(() => completeOnboarding(name));
+    startTransition(() => completeOnboarding(name, next ?? undefined));
   }
 
   return (

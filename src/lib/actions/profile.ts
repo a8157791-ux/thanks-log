@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
-export async function completeOnboarding(nickname: string) {
+export async function completeOnboarding(nickname: string, next?: string) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -16,7 +16,7 @@ export async function completeOnboarding(nickname: string) {
     .update({ nickname: nickname.trim() || "친구" })
     .eq("id", user.id);
 
-  redirect("/today");
+  redirect(next?.startsWith("/") ? next : "/today");
 }
 
 export async function updateNickname(nickname: string) {
