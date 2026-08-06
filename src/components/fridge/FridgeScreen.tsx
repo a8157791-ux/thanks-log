@@ -57,6 +57,7 @@ const RECIPE_SITES = [
     label: "일등감의 쉬운레시피",
     url: "https://www.youtube.com/@%EC%9D%BC%EB%93%B1%EA%B0%90%EC%9D%98%EC%89%AC%EC%9A%B4%EB%A0%88%EC%8B%9C%ED%94%BC/featured",
   },
+  { label: "쿠킹크리아", url: "https://www.youtube.com/@cookcrea" },
 ];
 
 type DragState = { itemId: string; fromZone: FridgeZone; label: string; x: number; y: number };
