@@ -197,6 +197,17 @@ create table public.schedule_items (
 create index schedule_items_user_idx on public.schedule_items (user_id, event_date);
 create index schedule_items_group_idx on public.schedule_items (group_id, event_date);
 
+create table public.cooked_dishes (
+  id          uuid primary key default gen_random_uuid(),
+  user_id     uuid not null references public.profiles(id) on delete cascade,
+  name        text not null,
+  link        text,
+  note        text,
+  cooked_on   date not null default current_date,
+  created_at  timestamptz not null default now()
+);
+create index cooked_dishes_user_idx on public.cooked_dishes (user_id, cooked_on desc, created_at desc);
+
 -- ============================================================
 -- ROW LEVEL SECURITY
 -- ============================================================
@@ -214,6 +225,7 @@ alter table public.shopping_items enable row level security;
 alter table public.menu_ideas     enable row level security;
 alter table public.passed_recipes enable row level security;
 alter table public.schedule_items enable row level security;
+alter table public.cooked_dishes  enable row level security;
 
 -- helper: is the current user a member of a group?
 create function public.is_group_member(gid uuid) returns boolean
@@ -386,6 +398,9 @@ create policy schedule_items_update on public.schedule_items for update
   using (user_id = auth.uid() or (group_id is not null and public.is_group_member(group_id)));
 create policy schedule_items_delete on public.schedule_items for delete
   using (user_id = auth.uid() or (group_id is not null and public.is_group_member(group_id)));
+
+create policy cooked_dishes_all on public.cooked_dishes for all
+  using (user_id = auth.uid()) with check (user_id = auth.uid());
 
 -- ============================================================
 -- STORAGE

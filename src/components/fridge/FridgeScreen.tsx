@@ -2,11 +2,16 @@
 
 import Link from "next/link";
 import { useMemo, useRef, useState, useTransition, type PointerEvent as ReactPointerEvent } from "react";
+import { createPortal } from "react-dom";
 import {
   ArrowSquareOut,
+  ArrowsClockwise,
   Basket,
   BookmarkSimple,
+  CaretRight,
   Check,
+  CookingPot,
+  ForkKnife,
   Jar,
   Lightbulb,
   Package,
@@ -21,6 +26,7 @@ import {
   X,
 } from "@phosphor-icons/react/dist/ssr";
 import { GroupIcon } from "@/lib/group-icons";
+import { addCookedDish } from "@/lib/actions/cooked";
 import { addFridgeItem, moveFridgeItem, removeFridgeItem } from "@/lib/actions/fridge";
 import { addMenuIdea, removeMenuIdea } from "@/lib/actions/ideas";
 import { setDefaultFridge } from "@/lib/actions/profile";
@@ -47,17 +53,42 @@ const RECIPE_SITES = [
   { label: "백종원의 요리비책", url: "https://www.youtube.com/@paik_jongwon/videos" },
   { label: "1분요리 뚝딱이형", url: "https://www.youtube.com/@1mincook" },
   { label: "유지만", url: "https://www.youtube.com/@%EC%9C%A0%EC%A7%80%EB%A7%8C/shorts" },
+  {
+    label: "일등감의 쉬운레시피",
+    url: "https://www.youtube.com/@%EC%9D%BC%EB%93%B1%EA%B0%90%EC%9D%98%EC%89%AC%EC%9A%B4%EB%A0%88%EC%8B%9C%ED%94%BC/featured",
+  },
 ];
 
 type DragState = { itemId: string; fromZone: FridgeZone; label: string; x: number; y: number };
 
-function shuffle<T>(arr: T[]): T[] {
+// 시드 기반 난수 (mulberry32). 같은 시드 → 같은 순서라서 서버·클라이언트 렌더가 일치.
+function mulberry32(seed: number): () => number {
+  let a = seed >>> 0;
+  return () => {
+    a |= 0;
+    a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function seededShuffle<T>(arr: T[], rand: () => number): T[] {
   const result = [...arr];
   for (let i = result.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const j = Math.floor(rand() * (i + 1));
     [result[i], result[j]] = [result[j], result[i]];
   }
   return result;
+}
+
+// 로컬 기준 오늘 날짜(YYYY-MM-DD). UTC로 밀려서 어제로 찍히는 걸 막기 위해 직접 조합.
+function todayLocal(): string {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, "0");
+  const d = String(now.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
 }
 
 export function FridgeScreen({
@@ -69,6 +100,7 @@ export function FridgeScreen({
   groups,
   activeGroupId,
   defaultGroupId,
+  recSeed,
 }: {
   initialItems: FridgeItem[];
   initialSaved: SavedRecipe[];
@@ -78,6 +110,7 @@ export function FridgeScreen({
   groups: GroupOption[];
   activeGroupId: string | null;
   defaultGroupId: string | null;
+  recSeed: number;
 }) {
   const [items, setItems] = useState<FridgeItem[]>(initialItems);
   const [saved, setSaved] = useState<SavedRecipe[]>(initialSaved);
@@ -87,6 +120,10 @@ export function FridgeScreen({
   const [shoppingDraft, setShoppingDraft] = useState("");
   const [ideas, setIdeas] = useState<MenuIdea[]>(initialIdeas);
   const [ideaDraft, setIdeaDraft] = useState("");
+  // 방금 '해먹었어요'로 레시피 창고에 담은 항목 키 (버튼 피드백용)
+  const [justLogged, setJustLogged] = useState<Set<string>>(() => new Set());
+  // 추천 셔플 seed — 서버 값으로 시작하고, 새로고침 버튼으로만 바뀜(hydration 안전).
+  const [recSeedState, setRecSeedState] = useState(recSeed);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const shoppingComposingRef = useRef(false);
   const ideaComposingRef = useRef(false);
@@ -107,12 +144,15 @@ export function FridgeScreen({
 
   const allNames = useMemo(() => items.map((i) => i.name), [items]);
   const savedNames = useMemo(() => new Set(saved.map((r) => r.name)), [saved]);
-  // 재료가 그대로면 추천도 항상 똑같이 나왔던 문제 — 상위 후보군(최대 8개) 안에서만
-  // 매번 랜덤하게 4개를 뽑아, 관련성은 유지하면서 새로고침할 때마다 조합이 바뀌게 함.
+  // 지금 재료로 만들 수 있는(2개 이상 매칭) 후보 전체에서 매번 4개를 랜덤으로 뽑는다.
+  // 이미 저장/패스한 메뉴는 후보에서 제외. 셔플 seed는 새로고침 버튼으로만 바뀌고,
+  // 첫 렌더 seed는 서버가 내려줘서 서버·클라이언트 hydration이 어긋나지 않음.
   const recommendations = useMemo(() => {
-    const pool = recommendRecipes(allNames, 20).filter((r) => !passedNames.has(r.name));
-    return shuffle(pool.slice(0, 8)).slice(0, 4);
-  }, [allNames, passedNames]);
+    const pool = recommendRecipes(allNames, 30).filter(
+      (r) => !passedNames.has(r.name) && !savedNames.has(r.name),
+    );
+    return seededShuffle(pool, mulberry32(recSeedState)).slice(0, 4);
+  }, [allNames, passedNames, savedNames, recSeedState]);
 
   function handlePass(name: string) {
     setPassedNames((prev) => new Set(prev).add(name));
@@ -268,6 +308,28 @@ export function FridgeScreen({
         setErrorMsg(error);
       }
     });
+  }
+
+  // '해먹었어요' → 레시피 창고(cooked_dishes)에 오늘 날짜로 담기. 목록은 별도 페이지라
+  // 여기선 버튼 라벨만 '담음 ✓'으로 바꿔 피드백.
+  function quickLog(key: string, name: string, link: string | null) {
+    if (justLogged.has(key)) return;
+    setJustLogged((prev) => new Set(prev).add(key));
+    startTransition(async () => {
+      const { error } = await addCookedDish({ name, link, cookedOn: todayLocal() });
+      if (error) {
+        setJustLogged((prev) => {
+          const next = new Set(prev);
+          next.delete(key);
+          return next;
+        });
+        setErrorMsg(error);
+      }
+    });
+  }
+
+  function refreshRecommendations() {
+    setRecSeedState((s) => (s + 0x9e3779b1) >>> 0);
   }
 
   function submitAdd(zone: FridgeZone) {
@@ -462,15 +524,26 @@ export function FridgeScreen({
               <Sparkle size={14} weight="fill" color="var(--color-accent-4)" />
             </h3>
           </div>
-          {passedNames.size > 0 && (
+          <div className="flex shrink-0 items-center gap-3">
+            {passedNames.size > 0 && (
+              <button
+                type="button"
+                onClick={handleResetPassed}
+                className="border-0 bg-transparent p-0 text-[12px] text-hint"
+              >
+                패스한 메뉴 다시 보기
+              </button>
+            )}
             <button
               type="button"
-              onClick={handleResetPassed}
-              className="border-0 bg-transparent p-0 text-[12px] text-hint"
+              onClick={refreshRecommendations}
+              className="inline-flex items-center gap-1 rounded-pill border border-border-2 bg-card px-2.5 py-1.5 text-[12px] text-muted"
+              aria-label="다른 메뉴 추천 받기"
             >
-              패스한 메뉴 다시 보기
+              <ArrowsClockwise size={13} weight="bold" />
+              새로고침
             </button>
-          )}
+          </div>
         </div>
 
         {recommendations.length === 0 ? (
@@ -554,21 +627,60 @@ export function FridgeScreen({
                     <X size={13} weight="bold" />
                   </button>
                 </div>
-                <a
-                  href={r.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-2.5 inline-flex items-center gap-1 text-[13px] font-medium"
-                  style={{ color: "var(--color-accent-4)" }}
-                >
-                  레시피 보기
-                  <ArrowSquareOut size={13} weight="bold" />
-                </a>
+                <div className="mt-2.5 flex items-center justify-between">
+                  <a
+                    href={r.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-[13px] font-medium"
+                    style={{ color: "var(--color-accent-4)" }}
+                  >
+                    레시피 보기
+                    <ArrowSquareOut size={13} weight="bold" />
+                  </a>
+                  {justLogged.has(`saved:${r.name}`) ? (
+                    <span className="inline-flex items-center gap-1 rounded-btn px-2.5 py-1.5 text-[12px] text-hint">
+                      <Check size={13} weight="bold" color="var(--color-accent)" />
+                      창고에 담음
+                    </span>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => quickLog(`saved:${r.name}`, r.name, r.link)}
+                      className="inline-flex items-center gap-1 rounded-btn border border-border bg-page px-2.5 py-1.5 text-[12px] text-muted"
+                      aria-label={`${r.name} 오늘 해먹은 메뉴로 기록`}
+                    >
+                      <ForkKnife size={13} weight="regular" />
+                      해먹었어요
+                    </button>
+                  )}
+                </div>
               </div>
             ))}
           </div>
         </div>
       )}
+
+      <div className="mt-9">
+        <p className="m-0 text-[12px] uppercase tracking-[0.08em] text-hint">그날 뭐 해먹었는지</p>
+        <Link
+          href="/fridge/cookbook"
+          className="mt-3.5 flex items-center justify-between gap-3 rounded-card border border-border bg-card px-4.5 py-4"
+        >
+          <span className="flex items-center gap-3">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-panel">
+              <CookingPot size={18} weight="fill" color="var(--color-accent)" />
+            </span>
+            <span className="flex flex-col">
+              <span className="text-[15px] font-semibold text-ink">레시피 창고</span>
+              <span className="mt-0.5 text-[12.5px] text-hint">
+                해먹은 메뉴·레시피 링크·양념장 메모를 날짜별로
+              </span>
+            </span>
+          </span>
+          <CaretRight size={16} weight="bold" color="var(--color-faint)" />
+        </Link>
+      </div>
 
       <div className="mt-9">
         <p className="m-0 text-[12px] uppercase tracking-[0.08em] text-hint">문득 떠오르면 바로</p>
@@ -589,6 +701,22 @@ export function FridgeScreen({
               <span className="match-input-text flex-1 text-[13.5px] leading-[1.6] text-ink text-wrap-pretty">
                 {idea.note}
               </span>
+              {justLogged.has(`idea:${idea.id}`) ? (
+                <span className="mt-0.5 inline-flex shrink-0 items-center gap-1 text-[12px] text-hint">
+                  <Check size={13} weight="bold" color="var(--color-accent)" />
+                  담음
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => quickLog(`idea:${idea.id}`, idea.note, null)}
+                  className="mt-0.5 inline-flex shrink-0 items-center gap-1 border-0 bg-transparent p-0 text-[12px] text-faint"
+                  aria-label={`${idea.note} 오늘 해먹은 메뉴로 기록`}
+                >
+                  <ForkKnife size={13} weight="regular" />
+                  해먹음
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => handleRemoveIdea(idea)}
@@ -717,14 +845,22 @@ export function FridgeScreen({
         </div>
       </div>
 
-      {drag && (
-        <div
-          className="pointer-events-none fixed z-50 rounded-pill border border-border-2 bg-card px-3.5 py-2 text-[13px] font-medium text-ink shadow-hero"
-          style={{ left: drag.x, top: drag.y, transform: "translate(-50%, -130%)" }}
-        >
-          {drag.label}
-        </div>
-      )}
+      {drag &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <div
+            className="pointer-events-none fixed z-50 rounded-pill border border-border-2 bg-card px-3.5 py-2 text-[13px] font-medium text-ink shadow-hero"
+            style={{
+              left: drag.x,
+              top: drag.y,
+              transform: "translate(-50%, -130%)",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {drag.label}
+          </div>,
+          document.body,
+        )}
     </div>
   );
 }

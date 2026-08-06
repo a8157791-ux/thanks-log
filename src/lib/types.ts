@@ -114,6 +114,16 @@ export type PassedRecipe = {
   created_at: string;
 };
 
+export type CookedDish = {
+  id: string;
+  user_id: string;
+  name: string;
+  link: string | null;
+  note: string | null;
+  cooked_on: string; // YYYY-MM-DD
+  created_at: string;
+};
+
 export type ScheduleItem = {
   id: string;
   user_id: string;
@@ -208,6 +218,12 @@ export type Database = {
         Row: ScheduleItem;
         Insert: Partial<ScheduleItem> & { user_id: string; title: string; event_date: string };
         Update: Partial<ScheduleItem>;
+        Relationships: [];
+      };
+      cooked_dishes: {
+        Row: CookedDish;
+        Insert: Partial<CookedDish> & { user_id: string; name: string };
+        Update: Partial<CookedDish>;
         Relationships: [];
       };
     };

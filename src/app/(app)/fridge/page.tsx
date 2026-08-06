@@ -73,6 +73,10 @@ export default async function FridgePage({
       supabase.from("passed_recipes").select("name").eq("user_id", user.id),
     ]);
 
+  // 추천 메뉴 셔플 seed를 서버에서 한 번 정해서 넘긴다. (클라이언트가 Math.random을
+  // 다시 굴리면 hydration 불일치가 나서.) 요청 시각에서 뽑아 새로고침마다 조합이 바뀜.
+  const recSeed = new Date().getTime() >>> 0;
+
   return (
     <FridgeScreen
       key={activeGroupId ?? "personal"}
@@ -84,6 +88,7 @@ export default async function FridgePage({
       groups={groups}
       activeGroupId={activeGroupId}
       defaultGroupId={defaultGroupId}
+      recSeed={recSeed}
     />
   );
 }
